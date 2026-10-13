@@ -13,7 +13,7 @@
     {
       "binding": "DB",
       "database_name": "royale-atlas",
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "2faf66d6-fe71-41e4-8121-b1a6f91d4944",
       "migrations_dir": "migrations",
     },
   ],
