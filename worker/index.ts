@@ -9,6 +9,8 @@ import {
 } from "../shared/schema";
 import { digest, compareCards } from "../shared/versioning";
 import { readCards, publishRelease, publishDecks } from "./store";
+import { balanceEditions, briefCards } from "./balance-feed";
+import { builderCards } from "./builder-feed";
 type Env = {
   DB: D1Database;
   ASSETS: Fetcher;
@@ -177,6 +179,10 @@ app.get("/api/status", async (c) => {
     runs: runs.results,
   });
 });
+app.get("/api/balance-briefs", (c) =>
+  c.json({ editions: balanceEditions, cards: briefCards }),
+);
+app.get("/api/deck-builder", (c) => c.json({ cards: builderCards }));
 app.get("/api/releases", async (c) => {
   const stream = z
     .string()

@@ -100,6 +100,32 @@ try {
     await new Promise((r) => setTimeout(r, 200));
   }
   assert.ok(ready, "Worker did not start: " + output);
+  const briefFeed = await request("/api/balance-briefs");
+  assert.equal(briefFeed.status, 200);
+  const builderFeed = await request("/api/deck-builder");
+  assert.equal(builderFeed.status, 200);
+  assert.equal(builderFeed.data.cards.length, 123);
+  assert.equal(
+    builderFeed.data.cards.find((card) => card.id === 27000000).name,
+    "加农炮",
+  );
+  assert.ok(
+    builderFeed.data.cards
+      .find((card) => card.id === 26000023)
+      .forms.includes("hero"),
+  );
+  assert.equal(briefFeed.data.editions[0].entries.length, 17);
+  assert.equal(briefFeed.data.editions[0].liveVersionVerified, false);
+  assert.equal(briefFeed.data.editions[0].effectiveAt, null);
+  assert.equal(briefFeed.data.cards.length, 123);
+  assert.equal(
+    briefFeed.data.cards.find((card) => card.id === 28000015).name,
+    "野蛮人滚桶",
+  );
+  assert.equal(
+    briefFeed.data.editions[0].entries.flatMap((entry) => entry.facts).length,
+    21,
+  );
   const card = {
     id: 26000000,
     key: "knight",

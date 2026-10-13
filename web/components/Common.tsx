@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import type { Card } from "../../shared/schema";
+import type { DeckCard } from "../../shared/deck-layout";
 import { RefreshCw, Layers, ChevronLeft, ChevronRight, X } from "lucide-react";
 export function Picture({
   card,
   small = false,
 }: {
-  card?: Card;
+  card?: DeckCard;
   small?: boolean;
 }) {
   const [broken, setBroken] = useState(false);
@@ -16,13 +16,16 @@ export function Picture({
         <img
           src={card.image_url}
           alt={card.name}
+          draggable={false}
           loading="lazy"
           onError={() => setBroken(true)}
         />
       ) : (
         <span className="image-fallback">{card?.name ?? "未知卡牌"}</span>
       )}
-      {card && <span className="elixir">{card.elixir}</span>}
+      {typeof card?.elixir === "number" && (
+        <span className="elixir">{card.elixir}</span>
+      )}
     </div>
   );
 }

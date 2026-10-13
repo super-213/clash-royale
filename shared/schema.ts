@@ -119,6 +119,8 @@ export type Deck = {
   slots: Slot[];
   created_at: string;
   last_seen_at: string;
+  name?: string;
+  slot_order?: "explicit";
   origins: {
     source: string;
     source_url: string;

@@ -1,5 +1,5 @@
 import type { Release } from "../shared/schema";
-export type View = "decks" | "cards" | "balance" | "sources";
+export type View = "brief" | "decks" | "cards" | "balance" | "sources";
 export type Run = {
   source: string;
   status: string;

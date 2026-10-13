@@ -1,9 +1,15 @@
 import { useEffect, useState } from "react";
 import type { Card, Deck } from "../../shared/schema";
 import { copyDeckUrl } from "../../shared/versioning";
+import {
+  layoutDeck,
+  type DeckCard,
+  type DisplayCard,
+} from "../../shared/deck-layout";
 import { useApi } from "../api";
 import { date } from "../format";
-import { Picture, Notice, Empty, Pager } from "./Common";
+import { Notice, Empty, Pager } from "./Common";
+import { DeckSlots } from "./DeckSlots";
 import {
   Search,
   X,
@@ -24,6 +30,8 @@ export function Decks({
   setOnlySaved,
   saved,
   save,
+  showBrief,
+  buildFrom,
   dictionary,
   copy,
   open,
@@ -39,7 +47,9 @@ export function Decks({
   setOnlySaved: (v: boolean) => void;
   saved: string[];
   save: (id: string) => void;
-  dictionary: Record<number, Card>;
+  showBrief: () => void;
+  buildFrom: (deck: Deck) => void;
+  dictionary: Record<number, DisplayCard>;
   copy: (t: string) => void;
   open: (d: Deck) => void;
   total: number;
@@ -74,6 +84,17 @@ export function Decks({
         </button>
         <span className="tabs-note">8 张卡牌 · 一套配置</span>
       </div>
+      {saved.length > 0 && (
+        <div className="brief-library-link">
+          <span>
+            <Heart size={16} />
+            已收藏 {saved.length} 套卡组，可查看相关平衡调整与影响解读。
+          </span>
+          <button onClick={showBrief}>
+            查看更新简报 <ArrowUpRight size={15} />
+          </button>
+        </div>
+      )}
       <div className="filters">
         <label className="search">
           <Search size={18} />
@@ -183,20 +204,7 @@ export function Decks({
                   onClick={() => open(d)}
                   aria-label={`查看 ${d.origins[0]?.title} 的卡牌组成`}
                 >
-                  {d.slots.map((s) => (
-                    <div key={s.id}>
-                      <Picture card={dictionary[s.id]} />
-                      {s.variant !== "normal" && s.variant !== "unknown" && (
-                        <span className="variant">
-                          {s.variant === "evolution"
-                            ? "觉醒"
-                            : s.variant === "hero"
-                              ? "英雄"
-                              : "未记录"}
-                        </span>
-                      )}
-                    </div>
-                  ))}
+                  <DeckSlots slots={d.slots} cards={dictionary} />
                 </button>
                 <div className="deck-metrics">
                   <span>
@@ -208,11 +216,18 @@ export function Decks({
                   <button onClick={() => open(d)}>
                     配置与出处 <ArrowUpRight size={15} />
                   </button>
-                  <button onClick={() => copy(copyDeckUrl(d.slots))}>
+                  <button
+                    onClick={() =>
+                      copy(copyDeckUrl(layoutDeck(d.slots, dictionary).slots))
+                    }
+                  >
                     <Copy size={14} />
                     复制
                     {d.slots.some((s) => s.variant !== "normal") ? "基础" : ""}
                     链接
+                  </button>
+                  <button onClick={() => buildFrom(d)}>
+                    按当前槽位配卡 <ArrowUpRight size={15} />
                   </button>
                 </div>
               </article>
@@ -235,7 +250,7 @@ export function Decks({
         onChange={setPage}
       />
       <p className="scope-note">
-        收录范围由已接入来源决定；历史预设不代表当前热门卡组。卡牌图片仅用于识别组成。
+        收录范围由已接入来源决定；历史预设不代表当前热门卡组。槽位按已记录形态整理展示，不代表来源的实际槽序或已解锁状态。
       </p>
     </>
   );
@@ -246,30 +261,23 @@ export function DeckPanel({
   copy,
 }: {
   deck: Deck;
-  dictionary: Record<number, Card>;
+  dictionary: Record<number, DeckCard>;
   copy: (text: string) => void;
 }) {
-  const url = copyDeckUrl(deck.slots);
+  const url = copyDeckUrl(
+    layoutDeck(deck.slots, dictionary, {
+      preserveOrder: deck.slot_order === "explicit",
+    }).slots,
+  );
   return (
     <>
-      <h2>{deck.origins[0]?.title}</h2>
-      <div className="detail-deck-grid">
-        {deck.slots.map((s) => (
-          <div key={s.id}>
-            <Picture card={dictionary[s.id]} />
-            <span>{dictionary[s.id]?.name ?? s.id}</span>
-            <small>
-              {s.variant === "normal"
-                ? "普通"
-                : s.variant === "evolution"
-                  ? "觉醒"
-                  : s.variant === "hero"
-                    ? "英雄"
-                    : "未记录"}
-            </small>
-          </div>
-        ))}
-      </div>
+      <h2>{deck.name ?? deck.origins[0]?.title}</h2>
+      <DeckSlots
+        slots={deck.slots}
+        cards={dictionary}
+        context="detail"
+        preserveOrder={deck.slot_order === "explicit"}
+      />
       <div className="detail-actions">
         <button className="primary" onClick={() => copy(url)}>
           <Copy size={16} />
@@ -285,10 +293,17 @@ export function DeckPanel({
         </a>
       </div>
       <p className="scope-note">
-        链接根据 8 张卡牌 ID
-        生成，仅导入基础卡牌。觉醒/英雄形态和槽位请在游戏内确认。社区样本合并了不同形态，只能确认基础卡牌组成。尚未经过游戏内导入验证。
+        {deck.slot_order === "explicit"
+          ? "链接按你保存的 8 张卡牌顺序生成。特殊形态不包含在基础链接中，导入后请在游戏内确认。"
+          : "链接根据 8 张卡牌 ID 生成，顺序与上方展示一致，仅导入基础卡牌。槽位按来源已记录形态编排，不代表实际已激活；觉醒/精英形态和解锁状态请在游戏内确认。社区样本合并了不同形态，只能确认基础卡牌组成。尚未经过游戏内导入验证。"}
       </p>
-      <h3>收录出处</h3>
+      {deck.slot_order === "explicit" ? (
+        <p className="scope-note">
+          自己配的卡组 · 槽位和形态按你的选择保存 · 仅在当前浏览器保留
+        </p>
+      ) : (
+        <h3>收录出处</h3>
+      )}
       <div className="origin-list">
         {deck.origins.map((o, i) => (
           <div key={i}>

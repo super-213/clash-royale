@@ -8,6 +8,7 @@ import {
   Check,
   Crown,
   RefreshCw,
+  Bookmark,
 } from "lucide-react";
 import type { Card, Deck } from "../shared/schema";
 import { api, useApi } from "./api";
@@ -18,10 +19,42 @@ import { Decks, DeckPanel } from "./components/Decks";
 import { Cards, CardDialog } from "./components/Cards";
 import { Balance } from "./components/Balance";
 import { Sources } from "./components/Sources";
+import { Brief } from "./components/Brief";
+import { DeckEditor } from "./components/DeckEditor";
+import {
+  PERSONAL_KEY,
+  MAX_PERSONAL_DECKS,
+  parsePersonalDecks,
+  serializePersonalDecks,
+  deckCardDictionary,
+  type PersonalDeck,
+  type BuilderCard,
+} from "../shared/personal-decks";
+import type { DisplayCard } from "../shared/deck-layout";
 function App() {
+  const [personalState, setPersonalState] = useState(() => {
+    try {
+      return {
+        decks: parsePersonalDecks(localStorage.getItem(PERSONAL_KEY)),
+        warning: "",
+      };
+    } catch {
+      return {
+        decks: [] as PersonalDeck[],
+        warning: "本地自配卡组暂时无法读取。收藏卡组仍可正常使用。",
+      };
+    }
+  });
+  const [editor, setEditor] = useState<{
+    deck?: PersonalDeck;
+    source?: Deck;
+  } | null>(null);
+  const [deletedPersonal, setDeletedPersonal] = useState<PersonalDeck | null>(
+    null,
+  );
   const initial = new URLSearchParams(location.search);
   const [view, setView] = useState<View>(
-    (["decks", "cards", "balance", "sources"].includes(
+    (["brief", "decks", "cards", "balance", "sources"].includes(
       initial.get("view") ?? "",
     )
       ? initial.get("view")
@@ -36,9 +69,13 @@ function App() {
     try {
       const v = JSON.parse(localStorage.getItem("royale-saved") ?? "[]");
       return Array.isArray(v)
-        ? v
-            .filter((x) => typeof x === "string" && /^[a-f0-9]{64}$/.test(x))
-            .slice(0, 60)
+        ? [
+            ...new Set(
+              v.filter(
+                (x) => typeof x === "string" && /^[a-f0-9]{64}$/.test(x),
+              ),
+            ),
+          ].slice(0, 60)
         : [];
     } catch {
       return [];
@@ -48,6 +85,7 @@ function App() {
     [selectedDeck, setSelectedDeck] = useState<Deck | null>(null),
     [toast, setToast] = useState("");
   const status = useApi<Status>("/api/status");
+  const formCatalog = useApi<{ cards: BuilderCard[] }>("/api/deck-builder");
   const activeStream =
     stream ||
     (status.data?.heads.find((x) => x.stream === "supercell-api")?.stream ??
@@ -57,6 +95,15 @@ function App() {
       "royaleapi-archive");
   const head = status.data?.heads.find((x) => x.stream === activeStream);
   const [dictionary, setDictionary] = useState<Record<number, Card>>({});
+  const displayCards: Record<number, DisplayCard> = Object.fromEntries(
+    (formCatalog.data?.cards ?? []).map((card) => [card.id, card]),
+  );
+  for (const card of Object.values(dictionary))
+    displayCards[card.id] = {
+      ...displayCards[card.id],
+      ...card,
+      form_images: displayCards[card.id]?.form_images,
+    };
   useEffect(() => {
     let cancelled = false;
     setDictionary({});
@@ -100,6 +147,45 @@ function App() {
     setOnlySaved(false);
   };
   const notify = (text: string) => setToast(text);
+  const persistPersonal = (decks: PersonalDeck[]) => {
+    try {
+      localStorage.setItem(PERSONAL_KEY, serializePersonalDecks(decks));
+      setPersonalState({ decks, warning: "" });
+      return true;
+    } catch {
+      setPersonalState({
+        decks,
+        warning: "浏览器存储不可用，自配卡组仅本次会话保留；刷新后可能丢失。",
+      });
+      return false;
+    }
+  };
+  const savePersonal = (deck: PersonalDeck) => {
+    const exists = personalState.decks.some((value) => value.id === deck.id);
+    if (!exists && personalState.decks.length >= MAX_PERSONAL_DECKS) {
+      notify(`最多保存 ${MAX_PERSONAL_DECKS} 套自配卡组`);
+      return;
+    }
+    const decks = exists
+      ? personalState.decks.map((value) =>
+          value.id === deck.id ? deck : value,
+        )
+      : [...personalState.decks, deck];
+    const stored = persistPersonal(decks);
+    setEditor(null);
+    navigate("brief");
+    notify(
+      stored
+        ? "卡组已保存，简报已更新"
+        : "卡组仅保存到本次会话，刷新后可能丢失",
+    );
+  };
+  const deletePersonal = (id: string) => {
+    setDeletedPersonal(
+      personalState.decks.find((deck) => deck.id === id) ?? null,
+    );
+    persistPersonal(personalState.decks.filter((deck) => deck.id !== id));
+  };
   const save = (id: string) => {
     if (!saved.includes(id) && saved.length >= 60) {
       notify("最多收藏 60 个卡组，请先移除部分收藏");
@@ -113,7 +199,11 @@ function App() {
       localStorage.setItem("royale-saved", JSON.stringify(next));
     } catch {
       notify("浏览器存储不可用，收藏仅在本次浏览中保留");
+      return;
     }
+    notify(
+      saved.includes(id) ? "已取消收藏" : "已收藏，可在主卡组简报查看相关调整",
+    );
   };
   const copy = async (text: string) => {
     try {
@@ -138,6 +228,7 @@ function App() {
         <nav>
           {(
             [
+              ["brief", Bookmark],
               ["decks", Layers],
               ["cards", BookOpen],
               ["balance", GitBranch],
@@ -151,7 +242,12 @@ function App() {
             >
               <Icon size={19} />
               <span>{names[id]}</span>
-              {id === "balance" && <span className="nav-dot" />}
+              {id === "brief" &&
+                saved.length + personalState.decks.length > 0 && (
+                  <span className="brief-nav-count">
+                    {saved.length + personalState.decks.length}
+                  </span>
+                )}
             </button>
           ))}
         </nav>
@@ -169,39 +265,41 @@ function App() {
         </div>
       </aside>
       <div className="workspace">
-        <header className="topbar">
+        <header className={"topbar" + (view === "brief" ? " is-brief" : "")}>
           <span>
             资料库 <span className="slash">/</span> {names[view]}
           </span>
-          <div className="top-actions">
-            <span className="desktop-only">数据版本</span>
-            <select
-              aria-label="选择数据来源"
-              value={activeStream}
-              onChange={(e) => {
-                setStream(e.target.value);
-                setPage(1);
-                setFilter("");
-              }}
-            >
-              {status.data?.heads.length ? (
-                status.data.heads.map((r) => (
-                  <option key={r.stream} value={r.stream}>
-                    {streamName[r.stream] ?? r.stream}
-                  </option>
-                ))
-              ) : (
-                <option value="royaleapi-archive">等待数据同步</option>
-              )}
-            </select>
-            <button
-              className="icon-button"
-              aria-label="刷新来源状态"
-              onClick={status.retry}
-            >
-              <RefreshCw size={16} />
-            </button>
-          </div>
+          {view !== "brief" && (
+            <div className="top-actions">
+              <span className="desktop-only">数据版本</span>
+              <select
+                aria-label="选择数据来源"
+                value={activeStream}
+                onChange={(e) => {
+                  setStream(e.target.value);
+                  setPage(1);
+                  setFilter("");
+                }}
+              >
+                {status.data?.heads.length ? (
+                  status.data.heads.map((r) => (
+                    <option key={r.stream} value={r.stream}>
+                      {streamName[r.stream] ?? r.stream}
+                    </option>
+                  ))
+                ) : (
+                  <option value="royaleapi-archive">等待数据同步</option>
+                )}
+              </select>
+              <button
+                className="icon-button"
+                aria-label="刷新来源状态"
+                onClick={status.retry}
+              >
+                <RefreshCw size={16} />
+              </button>
+            </div>
+          )}
         </header>
         <main>
           <div className="page-heading">
@@ -212,13 +310,15 @@ function App() {
                 <span className="heading-dot">.</span>
               </h1>
               <p>
-                {view === "decks"
-                  ? "查看八张卡牌组成，收藏卡组，并打开游戏导入链接。"
-                  : view === "cards"
-                    ? "查阅卡牌组成参数与历史快照，追踪每一个变化。"
-                    : view === "balance"
-                      ? "像查看代码提交一样，对比卡牌参数的前后变化。"
-                      : "了解数据从哪里来、何时更新，以及当前收录范围。"}
+                {view === "brief"
+                  ? "配好自己的主卡组，查看相关平衡调整与影响解读。"
+                  : view === "decks"
+                    ? "查看八张卡牌组成，收藏卡组，并打开游戏导入链接。"
+                    : view === "cards"
+                      ? "查阅卡牌组成参数与历史快照，追踪每一个变化。"
+                      : view === "balance"
+                        ? "像查看代码提交一样，对比卡牌参数的前后变化。"
+                        : "了解数据从哪里来、何时更新，以及当前收录范围。"}
               </p>
             </div>
             <div className="heading-mark">
@@ -226,7 +326,7 @@ function App() {
             </div>
           </div>
           {status.error && <Notice error={status.error} retry={status.retry} />}
-          {head && (
+          {view !== "brief" && head && (
             <div className={"source-strip " + (stale(head) ? "stale" : "")}>
               <span className="strip-icon">
                 <Database size={17} />
@@ -252,10 +352,36 @@ function App() {
               </button>
             </div>
           )}
-          {!status.loading && !head && (
+          {view !== "brief" && !status.loading && !head && (
             <div className="notice">
               尚未同步数据。请运行 Python 采集器，再通过本地或线上入库接口发布。
             </div>
+          )}
+          {view === "brief" && (
+            <Brief
+              personal={personalState.decks}
+              personalWarning={personalState.warning}
+              editPersonal={(deck) => setEditor({ deck })}
+              deletePersonal={deletePersonal}
+              deletedPersonal={deletedPersonal}
+              undoDelete={() => {
+                if (
+                  deletedPersonal &&
+                  personalState.decks.length < MAX_PERSONAL_DECKS
+                ) {
+                  persistPersonal([...personalState.decks, deletedPersonal]);
+                  setDeletedPersonal(null);
+                }
+              }}
+              saved={saved}
+              dictionary={displayCards}
+              save={save}
+              open={setSelectedDeck}
+              browse={(onlySaved = false) => {
+                navigate("decks");
+                setOnlySaved(onlySaved);
+              }}
+            />
           )}
           {view === "decks" && (
             <Decks
@@ -278,7 +404,15 @@ function App() {
               }}
               saved={saved}
               save={save}
-              dictionary={dictionary}
+              showBrief={() => navigate("brief")}
+              buildFrom={(source) => {
+                if (personalState.decks.length >= MAX_PERSONAL_DECKS)
+                  notify(
+                    `最多保存 ${MAX_PERSONAL_DECKS} 套自配卡组，请先移除一套`,
+                  );
+                else setEditor({ source });
+              }}
+              dictionary={displayCards}
               copy={copy}
               open={setSelectedDeck}
               total={status.data?.decks ?? 0}
@@ -324,8 +458,21 @@ function App() {
       )}
       {selectedDeck && (
         <Modal title="卡组详情" close={() => setSelectedDeck(null)}>
-          <DeckPanel deck={selectedDeck} dictionary={dictionary} copy={copy} />
+          <DeckPanel
+            deck={selectedDeck}
+            dictionary={deckCardDictionary(selectedDeck, displayCards)}
+            copy={copy}
+          />
         </Modal>
+      )}
+      {editor && (
+        <DeckEditor
+          deck={editor.deck}
+          source={editor.source}
+          number={personalState.decks.length + 1}
+          close={() => setEditor(null)}
+          save={savePersonal}
+        />
       )}
       {toast && (
         <div className="toast" role="status">
