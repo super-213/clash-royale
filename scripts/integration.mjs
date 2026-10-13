@@ -54,7 +54,16 @@ async function request(path, payload, auth = true) {
         }
       : {},
   );
-  return { status: r.status, data: await r.json() };
+  return { status: r.status, data: await r.json(),
+    cache: r.headers.get("X-Atlas-Cache"), cacheControl: r.headers.get("Cache-Control") };
+}
+async function warmStatus() {
+  for (let i = 0; i < 30; i++) {
+    const response = await request("/api/status");
+    if (response.cache === "HIT") return response;
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  throw new Error("Status response was not cached");
 }
 try {
   execFileSync(
@@ -159,6 +168,14 @@ try {
     first.data.id,
   );
   assert.equal((await request("/api/cards?stream=test")).data.total, 1);
+  const dictionary = await request(`/api/cards/dictionary?stream=test&release=${first.data.id}`);
+  assert.equal(dictionary.status, 200);
+  assert.equal(dictionary.data.cards[0].name, card.name);
+  assert.deepEqual(dictionary.data.cards[0].stats, {});
+  assert.equal(
+    (await request(`/api/cards/dictionary?stream=other&release=${first.data.id}`)).status, 404,
+  );
+  assert.equal((await request("/api/cards?stream=test")).data.items[0].stats["characters/Knight"].hitpoints, 100);
   const second = await request("/api/ingest/release", {
     ...baseline,
     revision: "b",
@@ -182,6 +199,8 @@ try {
     second.data.id,
     "Replay must not roll the head back",
   );
+  const cachedStatus = await warmStatus();
+  assert.match(cachedStatus.cacheControl, /s-maxage=60/);
   const unchanged = await request("/api/ingest/release", {
     ...baseline,
     revision: "b-observed-again",
@@ -193,6 +212,7 @@ try {
   const observedHead = (await request("/api/status")).data.heads[0];
   assert.equal(observedHead.latest_source_updated_at, "2026-02-10T00:00:00Z");
   assert.equal(observedHead.source_updated_at, "2026-02-01T00:00:00Z");
+  assert.equal((await warmStatus()).data.decks, 0);
   assert.equal(
     (
       await request("/api/ingest/release", {
@@ -244,6 +264,7 @@ try {
   );
   let decks = (await request("/api/decks")).data;
   assert.equal(decks.total, 1);
+  assert.equal((await request("/api/status")).data.decks, 1, "Ingestion invalidates status and updates the stored count");
   assert.equal(decks.items[0].origins.length, 2);
   assert.equal(
     (
@@ -262,6 +283,10 @@ try {
     400,
   );
   assert.equal((await request("/api/decks?card=26000000")).data.total, 1);
+  assert.equal((await request("/api/decks?card=26000000&kind=preset&q=test")).data.total, 1);
+  assert.equal((await request("/api/decks?kind=preset")).data.total, 1, "Two origins must not duplicate a deck");
+  assert.equal((await request("/api/decks?card=29999999")).data.total, 0);
+  assert.equal((await request("/api/decks?kind=community")).data.total, 0);
   assert.equal((await request("/api/decks?q=test")).data.total, 1);
   assert.equal((await request("/api/cards?page=-1")).status, 400);
   assert.equal((await request("/api/compare?from=no&to=no")).status, 400);
@@ -270,7 +295,7 @@ try {
   assert.equal(shell.status, 200);
   assert.match(await shell.text(), /皇室档案/);
   console.log(
-    "Integration passed: real Worker + D1; auth, immutable releases, idempotence, concurrency, exact diff, origins, variant identity, filters and assets.",
+    "Integration passed: real Worker + D1; auth, immutable releases, idempotence, concurrency, exact diff, origins, indexed filters, dictionary, status cache/invalidation, stored counts and assets.",
   );
 } finally {
   if (server) {

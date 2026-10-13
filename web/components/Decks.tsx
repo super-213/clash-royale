@@ -7,6 +7,7 @@ import {
   type DisplayCard,
 } from "../../shared/deck-layout";
 import { useApi } from "../api";
+import { useDebouncedValue } from "../debounce";
 import { date } from "../format";
 import { Notice, Empty, Pager } from "./Common";
 import { DeckSlots } from "./DeckSlots";
@@ -61,11 +62,12 @@ export function Decks({
       setPage(1);
     }
   }, [dictionary]);
-  const params = new URLSearchParams({ q, page: String(page), limit: "12" });
+  const search = useDebouncedValue(q);
+  const params = new URLSearchParams({ q: search.trim(), page: String(page), limit: "12" });
   if (filter) params.set("kind", filter);
   if (card) params.set("card", card);
   if (onlySaved) params.set("ids", saved.join(","));
-  const r = useApi<{ items: Deck[]; total: number }>("/api/decks?" + params);
+  const r = useApi<{ items: Deck[]; total: number }>(q !== search ? null : "/api/decks?" + params);
   return (
     <>
       <div className="section-tabs">

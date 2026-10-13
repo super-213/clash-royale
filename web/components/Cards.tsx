@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Card, Release } from "../../shared/schema";
 import { useApi } from "../api";
+import { useDebouncedValue } from "../debounce";
 import {
   date,
   stale,
@@ -32,11 +33,12 @@ export function Cards({
   open: (c: Card) => void;
 }) {
   const [rarity, setRarity] = useState("");
+  const search = useDebouncedValue(q);
   const r = useApi<{ items: Card[]; total: number }>(
-    "/api/cards?" +
+    q !== search ? null : "/api/cards?" +
       new URLSearchParams({
         stream,
-        q,
+        q: search.trim(),
         type: filter,
         rarity,
         page: String(page),

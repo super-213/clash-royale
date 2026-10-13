@@ -44,6 +44,7 @@ uv run --directory crawler --frozen python -m arena --source archive --history 3
 - [Cloudflare 部署与维护手册](docs/deployment.md)
 - [采集与 API 数据合同](docs/data-contract.md)
 - [RoyaleAPI 网页 JSON 导出：188 条形态目录与 21 项平衡变更](docs/royaleapi-web.md)
+- [免费额度优化、实际请求数和迁移顺序](docs/query-budget.md)
 - [主卡组更新简报：匹配规则与后续公告维护](docs/brief.md)
 - [本轮验证记录](docs/validation.md)
 

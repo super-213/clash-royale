@@ -6,11 +6,14 @@ import {
   runSchema,
   type Release,
   type Deck,
+  type Card,
 } from "../shared/schema";
 import { digest, compareCards } from "../shared/versioning";
 import { readCards, publishRelease, publishDecks } from "./store";
 import { balanceEditions, briefCards } from "./balance-feed";
 import { builderCards } from "./builder-feed";
+import { deckWhere } from "./deck-query";
+const PUBLIC_CACHE = "royale-public-v2";
 type Env = {
   DB: D1Database;
   ASSETS: Fetcher;
@@ -28,19 +31,20 @@ app.use("/api/*", async (c, next) => {
 app.use("/api/*", async (c, next) => {
   const path = new URL(c.req.url).pathname;
   const cacheable =
-    c.req.method === "GET" && !["/api/health", "/api/status"].includes(path);
+    c.req.method === "GET" && path !== "/api/health";
   if (!cacheable) {
     await next();
     return;
   }
   const url = new URL(c.req.url);
+  if (path === "/api/status") url.search = "";
   url.searchParams.sort();
   const key = new Request(url.toString());
   const immutable =
     path === "/api/compare" ||
     (path.startsWith("/api/cards") && url.searchParams.has("release"));
   const ttl = immutable ? 86400 : 60;
-  const cache = await caches.open("royale-public-v1").catch(() => null);
+  const cache = await caches.open(PUBLIC_CACHE).catch(() => null);
   try {
     const hit = await cache?.match(key);
     if (hit) {
@@ -75,6 +79,14 @@ app.use("/api/ingest/*", async (c, next) => {
   )
     return c.json({ error: "Unauthorized" }, 401);
   await next();
+  // Refresh this data center immediately after a successful ingestion.
+  // Other data centers may serve their previous status for at most 60 seconds.
+  if (c.res.status >= 200 && c.res.status < 300) {
+    try {
+      const cache = await caches.open(PUBLIC_CACHE);
+      await cache.delete(new Request(new URL("/api/status", c.req.url).toString()));
+    } catch { /* Cache failure must not roll back a successful ingestion. */ }
+  }
 });
 async function body(request: Request) {
   const reader = request.body?.getReader();
@@ -167,7 +179,7 @@ app.get("/api/status", async (c) => {
       "SELECT r.*,h.latest_source_updated_at,h.last_observed_at FROM heads h JOIN releases r ON r.id=h.release_id ORDER BY r.stream",
     ).all<Release>(),
     c.env.DB.prepare(
-      "SELECT COUNT(*) AS count FROM decks WHERE hidden=0",
+      "SELECT count FROM catalog_totals WHERE name='visible_decks'",
     ).first<{ count: number }>(),
     c.env.DB.prepare(
       "SELECT source,started_at,finished_at,status,count,message FROM crawl_runs WHERE id IN (SELECT id FROM (SELECT id,ROW_NUMBER() OVER (PARTITION BY source ORDER BY finished_at DESC) AS rank FROM crawl_runs) WHERE rank=1) ORDER BY source",
@@ -271,6 +283,20 @@ app.get("/api/cards", async (c) => {
     page: q.page,
   });
 });
+app.get("/api/cards/dictionary", async (c) => {
+  const q = z.object({
+    stream: z.string().regex(/^[a-z0-9-]{1,60}$/),
+    release: z.string().regex(/^[a-f0-9]{64}$/),
+  }).parse(c.req.query());
+  const release = await c.env.DB.prepare("SELECT id FROM releases WHERE id=? AND stream=?")
+    .bind(q.release, q.stream).first();
+  if (!release) return c.json({ error: "Version not found" }, 404);
+  // The UI dictionary needs identity/display metadata, not megabytes of stats.
+  const rows = await c.env.DB.prepare(
+    "SELECT json_set(doc,'$.stats',json('{}')) AS doc FROM card_versions WHERE release_id=? ORDER BY card_id",
+  ).bind(q.release).all<{ doc: string }>();
+  return c.json({ cards: rows.results.map((row) => JSON.parse(row.doc) as Card) });
+});
 app.get("/api/cards/:id", async (c) => {
   const id = z.coerce.number().int().parse(c.req.param("id"));
   const stream = z
@@ -338,41 +364,18 @@ app.get("/api/decks", async (c) => {
       ids: z.string().max(4200).optional(),
     })
     .parse(c.req.query());
-  const clauses = ["d.hidden=0"];
-  const args: (string | number)[] = [];
-  if (q.q) {
-    clauses.push(
-      "EXISTS (SELECT 1 FROM deck_origins o WHERE o.deck_id=d.id AND instr(lower(o.title),lower(?))>0)",
-    );
-    args.push(q.q);
-  }
-  if (q.kind) {
-    clauses.push(
-      "EXISTS (SELECT 1 FROM deck_origins o WHERE o.deck_id=d.id AND o.kind=?)",
-    );
-    args.push(q.kind);
-  }
-  if (q.card) {
-    clauses.push(
-      "EXISTS (SELECT 1 FROM json_each(d.slots) s WHERE json_extract(s.value,'$.id')=?)",
-    );
-    args.push(q.card);
-  }
+  let idsFilter: string[] | undefined;
   if (q.ids !== undefined) {
-    const ids = z
+    idsFilter = z
       .array(z.string().regex(/^[a-f0-9]{64}$/))
       .max(60)
       .parse(q.ids ? q.ids.split(",") : []);
-    if (!ids.length) return c.json({ items: [], total: 0, page: q.page });
-    clauses.push(`d.id IN (${ids.map(() => "?").join(",")})`);
-    args.push(...new Set(ids));
-    /* placeholders must match deduped IDs */ clauses[clauses.length - 1] =
-      `d.id IN (${[...new Set(ids)].map(() => "?").join(",")})`;
+    if (!idsFilter.length) return c.json({ items: [], total: 0, page: q.page });
   }
-  const where = clauses.join(" AND ");
+  const { from, where, args, unfiltered } = deckWhere({ ...q, ids: idsFilter });
   const [rows, count] = await Promise.all([
     c.env.DB.prepare(
-      `SELECT d.* FROM decks d WHERE ${where} ORDER BY last_seen_at DESC,id LIMIT ? OFFSET ?`,
+      `SELECT d.* FROM ${from} WHERE ${where} ORDER BY d.last_seen_at DESC,d.id LIMIT ? OFFSET ?`,
     )
       .bind(...args, q.limit, (q.page - 1) * q.limit)
       .all<{
@@ -382,8 +385,10 @@ app.get("/api/decks", async (c) => {
         created_at: string;
         last_seen_at: string;
       }>(),
-    c.env.DB.prepare(`SELECT COUNT(*) AS count FROM decks d WHERE ${where}`)
-      .bind(...args)
+    c.env.DB.prepare(unfiltered
+      ? "SELECT count FROM catalog_totals WHERE name='visible_decks'"
+      : `SELECT COUNT(*) AS count FROM ${from} WHERE ${where}`)
+      .bind(...(unfiltered ? [] : args))
       .first<{ count: number }>(),
   ]);
   const ids = rows.results.map((x) => x.id);

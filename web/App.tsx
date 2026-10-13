@@ -11,7 +11,8 @@ import {
   Bookmark,
 } from "lucide-react";
 import type { Card, Deck } from "../shared/schema";
-import { api, useApi } from "./api";
+import { useApi } from "./api";
+import { loadCardDictionary } from "./card-dictionary";
 import { names, date, stale, streamName } from "./format";
 import type { View, Status } from "./types";
 import { Notice, Modal } from "./components/Common";
@@ -107,22 +108,11 @@ function App() {
   useEffect(() => {
     let cancelled = false;
     setDictionary({});
-    async function load() {
-      let p = 1;
-      let total = 1;
-      const all: Card[] = [];
-      while ((p - 1) * 48 < total) {
-        const r = await api<{ items: Card[]; total: number }>(
-          `/api/cards?stream=${activeStream}&limit=48&page=${p}`,
-        );
-        all.push(...r.items);
-        total = r.total;
-        p++;
-      }
-      if (!cancelled)
-        setDictionary(Object.fromEntries(all.map((c) => [c.id, c])));
-    }
-    load().catch(() => {});
+    // Do not load the fallback stream before status chooses the actual source.
+    if (!head?.id) return;
+    loadCardDictionary(activeStream, head.id)
+      .then((cards) => { if (!cancelled) setDictionary(cards); })
+      .catch(() => {});
     return () => {
       cancelled = true;
     };
@@ -383,7 +373,10 @@ function App() {
               total={status.data?.decks ?? 0}
             />
           )}
-          {view === "cards" && (
+          {(view === "cards" || view === "balance") && status.loading && (
+            <div className="loading-text">正在读取数据来源…</div>
+          )}
+          {view === "cards" && status.data && (
             <Cards
               q={q}
               setQ={(v) => {
@@ -401,7 +394,7 @@ function App() {
               open={setSelectedCard}
             />
           )}
-          {view === "balance" && (
+          {view === "balance" && status.data && (
             <Balance stream={activeStream} notify={notify} />
           )}
           {view === "sources" && (

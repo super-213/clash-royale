@@ -5,7 +5,7 @@ export async function api<T>(url: string, signal?: AbortSignal): Promise<T> {
   if (!r.ok) throw new Error(data.error ?? "数据请求失败");
   return data;
 }
-export function useApi<T>(url: string) {
+export function useApi<T>(url: string | null) {
   const [data, setData] = useState<T | null>(null),
     [error, setError] = useState(""),
     [loading, setLoading] = useState(true),
@@ -15,10 +15,11 @@ export function useApi<T>(url: string) {
     setLoading(true);
     setError("");
     setData(null);
+    if (url === null) return;
     api<T>(url, ctrl.signal)
-      .then(setData)
+      .then((result) => { if (!ctrl.signal.aborted) setData(result); })
       .catch((e) => {
-        if (e.name !== "AbortError") setError(e.message);
+        if (!ctrl.signal.aborted && e.name !== "AbortError") setError(e.message);
       })
       .finally(() => {
         if (!ctrl.signal.aborted) setLoading(false);
