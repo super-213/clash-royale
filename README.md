@@ -4,7 +4,7 @@
 
 已实现卡组搜索/类型/包含卡牌筛选、分页、浏览器收藏、出处详情、配卡编辑器；采集支持条件请求、原始档案、幂等发布和可恢复 outbox。
 
-卡牌图鉴/战斗参数、参数历史和双版本差异已下线，旧链接回到卡组页。archive 与参数 feed 采集入口已移除，每日只采集 community；可选 official 仅提供卡牌基础资料和指定玩家卡组。旧参数 JSON 与数据库历史保留为归档，不再导入、读取展示或生成新差异。
+卡牌图鉴/战斗参数、参数历史和双版本差异已下线，旧链接回到卡组页。archive 与参数 feed 采集入口已移除，每月定时采集 community；可选 official 仅提供卡牌基础资料和指定玩家卡组。旧参数 JSON 与数据库历史保留为归档，不再导入、读取展示或生成新差异。
 
 「我的卡组」（`?view=brief`，沿用旧链接）直接管理收藏与自配卡组。公告简报、公告匹配统计与对应接口已移除，不再请求或加载公告数据。
 
@@ -60,7 +60,7 @@ npm run test:integration
 uv run --directory crawler --frozen pytest
 ```
 
-GitHub 工作流包括检查、每天北京时间 08:17 公开来源采集、手动 Cloudflare 部署。线上任务需推送仓库并配置 production environment 后才生效。仓库 D1 ID 为占位值，部署前创建自己的 D1 并配置 secrets；当前无生产上线承诺。
+GitHub 工作流包括检查、每月 1 日北京时间 08:17 公开来源采集、手动 Cloudflare 部署。线上任务需推送仓库并配置 production environment 后才生效。仓库 D1 ID 为占位值，部署前创建自己的 D1 并配置 secrets；当前无生产上线承诺。
 
 游戏内容与素材归 Supercell 等权利人。本项目独立于 Supercell。来源：[RoyaleAPI 形态目录](https://royaleapi.com/)、[CR Data 社区样本](https://github.com/jayclim/CR-Data)、[官方开发者入口](https://developer.clashroyale.com/)。
 

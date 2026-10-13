@@ -86,12 +86,12 @@ Environment variables：
 | `CLOUDFLARE_D1_ID` | 真实生产数据库 ID，部署时生成配置                                |
 | `ARENA_API_URL`    | 实际服务 HTTPS URL，不能留空，否则采集任务失败                   |
 | `PLAYER_TAGS`      | 可选，指定玩家采集范围                                           |
-| `ENABLE_OFFICIAL`  | 明确设 `true` 才启用官方每日任务                                 |
+| `ENABLE_OFFICIAL`  | 明确设 `true` 才启用官方每月任务                                 |
 | `OFFICIAL_RUNNER`  | JSON runner labels，如 `["self-hosted","linux","static-egress"]` |
 
 - `check.yml`：推送和 PR 后构建、单元测试、Python 测试、真实本地 D1 集成验证。
 - `deploy.yml`：手动触发；校验 D1 ID、应用迁移、发布 Worker。INGEST_TOKEN 由 `wrangler secret put` 单独建立，本工作流不会自动覆盖或轮换。
-- `crawl.yml`：每天北京时间 **08:17** 抓 community 来源；实际运行可能延迟。手动入口仅保留 community/official。
+- `crawl.yml`：每月 1 日北京时间 **08:17** 抓 community 来源（UTC cron：`17 0 1 * *`）；实际运行可能延迟。手动入口仅保留 community/official。
 
 官方 key 的 IP 白名单应匹配固定出口 runner。未验证的免费代理不作为默认方案，也不把 API key 发到第三方代理。archive 与参数 feed 已退出工作流和 CLI，不会恢复抓取。旧投递队列中的参数任务保存在 `outbox/<目标>/retired/`，不会再次发送。
 

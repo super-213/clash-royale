@@ -6,7 +6,7 @@
 flowchart LR
   Reader[浏览器 / React] --> Edge[Cloudflare Workers Assets + Hono API]
   Edge --> D1[(D1: 展示目录 / 卡组 / 出处)]
-  Actions[GitHub Actions 每日 / 手动] --> Python[Python 来源适配器]
+  Actions[GitHub Actions 每月 / 手动] --> Python[Python 来源适配器]
   Python --> Community[CR Data 社区目录与卡组]
   Python --> Official[可选官方 API: 目录与玩家卡组]
   Python --> Outbox[原始档案 + 持久投递队列]
@@ -21,7 +21,7 @@ flowchart LR
 - `shared/`：前后端合同、确定性 JSON、内容 SHA-256、卡组身份与槽位规则。
 - `crawler/arena/`：Python 3.12 标准库；来源适配、条件请求、原始档案、目标隔离的 outbox。
 - `migrations/`：D1 顺序迁移。旧版本表与参数文件保留归档，不执行删除迁移。
-- `.github/workflows/`：推送检查、每天北京时间 08:17 community 采集、可选 official 及手动部署。
+- `.github/workflows/`：推送检查、每月 1 日北京时间 08:17 community 采集、可选 official 及手动部署。
 
 网页访问不触发采集，不需要 Python 常驻服务。采集凭据只在 Worker/runner 使用，不交付浏览器。
 
@@ -36,7 +36,7 @@ flowchart LR
 
 公告简报与 `/api/balance-briefs` 已移除，网页不再加载公告数据。原公告 JSON 仅在仓库留存，不打包到 Worker。
 
-原 `archive`、`feed` 和 `--history` CLI 入口已移除。`STATS_FEED_URL` 不再读取；每日任务也不再运行归档来源。旧 `data/releases/`、数据库 releases/card_versions/changes 中已有参数只作归档，不被参数页面或接口读取。
+原 `archive`、`feed` 和 `--history` CLI 入口已移除。`STATS_FEED_URL` 不再读取；定时任务也不再运行归档来源。旧 `data/releases/`、数据库 releases/card_versions/changes 中已有参数只作归档，不被参数页面或接口读取。
 
 ## 展示目录与卡组存储
 

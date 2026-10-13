@@ -76,6 +76,7 @@ class Publisher:
             self.url + "/api/ingest/" + message["endpoint"],
             data=json.dumps(message["payload"], ensure_ascii=False).encode(),
             headers={
+                "User-Agent": "RoyaleAtlas/0.1 (+https://github.com/super-213/clash-royale)",
                 "Authorization": "Bearer " + self.token,
                 "Content-Type": "application/json",
             },
