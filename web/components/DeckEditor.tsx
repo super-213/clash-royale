@@ -207,9 +207,8 @@ export function DeckEditor({
     >
       <header className="editor-header">
         <div>
-          <span className="editor-kicker">我的主卡组</span>
           <h2 id="deck-editor-title">
-            {deck ? "编辑卡组" : source ? "按当前槽位配卡" : "自己配卡组"}
+            {deck ? "编辑卡组" : "新建卡组"}
           </h2>
         </div>
         <button
@@ -372,12 +371,12 @@ export function DeckEditor({
             {saveError ||
               message ||
               (swapping
-                ? "点击另一个槽位交换，也可以直接拖动卡牌。"
+                ? "选择要交换的槽位"
                 : pending
                   ? `点击槽位放入${candidate!.name}。`
                   : editor.slotChosen || !selected
                     ? `点击卡牌填入第 ${target + 1} 槽。`
-                    : "先选卡牌或槽位开始替换。")}
+                    : "选择卡牌替换，或拖动换位")}
           </p>
         </section>
         <section className="editor-collection" aria-label="卡牌收藏册">
@@ -481,49 +480,40 @@ export function DeckEditor({
               </p>
             )}
           </div>
-          <div className="editor-use-bar" aria-label="所选卡牌操作">
-            {pending ? (
-              <>
-                <div className="editor-candidate">
-                  <strong>{candidate!.name}</strong>
-                  <small>点击上方槽位放入</small>
-                </div>
-                <button
-                  className="editor-cancel-choice"
-                  onClick={() => dispatch({ type: "cancel-choice" })}
-                >
-                  取消选卡
-                </button>
-              </>
-            ) : candidate && occupied === target ? (
-              <>
-                <div className="editor-candidate">
-                  <strong>{candidate.name}</strong>
-                  <small>点击另一张卡直接替换</small>
-                </div>
-                {target === 2 && wildForms.length > 1 ? (
-                  <small className="editor-form-hint">
-                    在卡组下方切换魔法栏位形态
-                  </small>
-                ) : (
-                  <small className="editor-form-hint">
-                    {candidate.rarity === "Champion"
-                      ? "英雄牌已自动安排到合法栏位"
-                      : "卡牌形态随栏位自动切换"}
-                  </small>
-                )}
-              </>
-            ) : (
-              <p>
-                {filled < 8
-                  ? "点击卡牌直接填入空槽。"
-                  : "先选卡再点槽位，或先点槽位再选卡。"}
-                <span className="editor-desktop-hint">
-                  也可拖动卡牌到槽位。
-                </span>
-              </p>
-            )}
-          </div>
+          {(pending || (candidate && occupied === target)) && (
+            <div className="editor-use-bar" aria-label="所选卡牌操作">
+              {pending ? (
+                <>
+                  <div className="editor-candidate">
+                    <strong>{candidate!.name}</strong>
+                  </div>
+                  <button
+                    className="editor-cancel-choice"
+                    onClick={() => dispatch({ type: "cancel-choice" })}
+                  >
+                    取消选卡
+                  </button>
+                </>
+              ) : candidate && occupied === target ? (
+                <>
+                  <div className="editor-candidate">
+                    <strong>{candidate.name}</strong>
+                  </div>
+                  {target === 2 && wildForms.length > 1 ? (
+                    <small className="editor-form-hint">
+                      在卡组下方切换魔法栏位形态
+                    </small>
+                  ) : (
+                    <small className="editor-form-hint">
+                      {candidate.rarity === "Champion"
+                        ? "英雄牌已自动安排到合法栏位"
+                        : "卡牌形态随栏位自动切换"}
+                    </small>
+                  )}
+                </>
+              ) : null}
+            </div>
+          )}
         </section>
       </div>
       <footer className="editor-footer">
@@ -532,12 +522,12 @@ export function DeckEditor({
             {invalid && filled === 8
               ? invalid
               : source
-                ? "适配草稿，请按已解锁情况确认形态。"
-                : "按三个特殊栏位配置，请确认已解锁所选形态。"}
+                ? "请确认已解锁草稿中的特殊形态"
+                : "特殊形态需在游戏内已解锁"}
           </small>
           <small>
             {draftStored
-              ? "关闭后保留草稿 · 当前浏览器保存"
+              ? "草稿已保存在当前浏览器"
               : "浏览器存储不可用，草稿仅本次保留"}
           </small>
         </div>

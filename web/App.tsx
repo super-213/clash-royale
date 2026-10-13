@@ -176,7 +176,7 @@ function App() {
     navigate("brief");
     notify(
       stored
-        ? "卡组已保存，简报已更新"
+        ? "卡组已保存"
         : "卡组仅保存到本次会话，刷新后可能丢失",
     );
   };
@@ -202,7 +202,7 @@ function App() {
       return;
     }
     notify(
-      saved.includes(id) ? "已取消收藏" : "已收藏，可在主卡组简报查看相关调整",
+      saved.includes(id) ? "已取消收藏" : "已收藏",
     );
   };
   const copy = async (text: string) => {
@@ -215,21 +215,18 @@ function App() {
   };
   return (
     <div className="app-shell">
-      <aside className="sidebar">
+      <header className="sidebar">
         <a className="brand" href="?view=decks">
           <span className="brand-icon">
             <Crown size={25} />
           </span>
-          <span>
-            皇室档案<small>ROYALE ATLAS</small>
-          </span>
+          <span>皇室档案</span>
         </a>
-        <div className="nav-caption">探索档案</div>
-        <nav>
+        <nav aria-label="主导航">
           {(
             [
-              ["brief", Bookmark],
               ["decks", Layers],
+              ["brief", Bookmark],
               ["cards", BookOpen],
               ["balance", GitBranch],
               ["sources", Database],
@@ -238,6 +235,7 @@ function App() {
             <button
               key={id}
               className={view === id ? "active" : ""}
+              aria-current={view === id ? "page" : undefined}
               onClick={() => navigate(id)}
             >
               <Icon size={19} />
@@ -254,92 +252,59 @@ function App() {
         <div className="sidebar-bottom">
           <div className="region">
             <span className="status-dot" />
-            国际服资料库
+            国际服
           </div>
-          <p>
-            卡组有出处
-            <br />
-            参数有历史
-          </p>
-          <small>独立粉丝项目 · 非 Supercell 官方</small>
         </div>
-      </aside>
+      </header>
       <div className="workspace">
-        <header className={"topbar" + (view === "brief" ? " is-brief" : "")}>
-          <span>
-            资料库 <span className="slash">/</span> {names[view]}
-          </span>
-          {view !== "brief" && (
-            <div className="top-actions">
-              <span className="desktop-only">数据版本</span>
-              <select
-                aria-label="选择数据来源"
-                value={activeStream}
-                onChange={(e) => {
-                  setStream(e.target.value);
-                  setPage(1);
-                  setFilter("");
-                }}
-              >
-                {status.data?.heads.length ? (
-                  status.data.heads.map((r) => (
-                    <option key={r.stream} value={r.stream}>
-                      {streamName[r.stream] ?? r.stream}
-                    </option>
-                  ))
-                ) : (
-                  <option value="royaleapi-archive">等待数据同步</option>
-                )}
-              </select>
-              <button
-                className="icon-button"
-                aria-label="刷新来源状态"
-                onClick={status.retry}
-              >
-                <RefreshCw size={16} />
-              </button>
-            </div>
-          )}
-        </header>
         <main>
           <div className="page-heading">
-            <div>
-              <div className="eyebrow">CLASH ROYALE / ARCHIVE</div>
-              <h1>
-                {names[view]}
-                <span className="heading-dot">.</span>
-              </h1>
-              <p>
-                {view === "brief"
-                  ? "配好自己的主卡组，查看相关平衡调整与影响解读。"
-                  : view === "decks"
-                    ? "查看八张卡牌组成，收藏卡组，并打开游戏导入链接。"
-                    : view === "cards"
-                      ? "查阅卡牌组成参数与历史快照，追踪每一个变化。"
-                      : view === "balance"
-                        ? "像查看代码提交一样，对比卡牌参数的前后变化。"
-                        : "了解数据从哪里来、何时更新，以及当前收录范围。"}
-              </p>
-            </div>
-            <div className="heading-mark">
-              <Crown size={66} strokeWidth={1} />
-            </div>
+            <h1>{names[view]}</h1>
+            {(view === "cards" || view === "balance") && (
+              <div className="top-actions">
+                <select
+                  aria-label="选择数据来源"
+                  value={activeStream}
+                  onChange={(e) => {
+                    setStream(e.target.value);
+                    setPage(1);
+                    setFilter("");
+                  }}
+                >
+                  {status.data?.heads.length ? (
+                    status.data.heads.map((r) => (
+                      <option key={r.stream} value={r.stream}>
+                        {streamName[r.stream] ?? r.stream}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="royaleapi-archive">等待数据同步</option>
+                  )}
+                </select>
+                <button
+                  className="icon-button"
+                  aria-label="刷新来源状态"
+                  onClick={status.retry}
+                >
+                  <RefreshCw size={16} />
+                </button>
+              </div>
+            )}
           </div>
           {status.error && <Notice error={status.error} retry={status.retry} />}
-          {view !== "brief" && head && (
+          {(view === "cards" || view === "balance") && head && (
             <div className={"source-strip " + (stale(head) ? "stale" : "")}>
               <span className="strip-icon">
                 <Database size={17} />
               </span>
               <span>
-                <strong>{streamName[head.stream] ?? head.stream}</strong>
                 <span className="strip-description">
                   {stale(head)
-                    ? "来源已过期 · 仅供历史参考"
+                    ? "历史参数"
                     : head.stream === "supercell-api"
                       ? "官方目录不提供战斗参数"
                       : head.stream === "cr-data-community"
-                        ? "对局样本 · 非全量目录 / 无战斗参数"
+                        ? "社区样本 · 无战斗参数"
                         : "来源参数快照"}
                 </span>
               </span>
@@ -348,13 +313,13 @@ function App() {
                 {date(head.latest_source_updated_at ?? head.source_updated_at)}
               </span>
               <button onClick={() => navigate("sources")}>
-                查看来源 <ArrowUpRight size={15} />
+                来源详情 <ArrowUpRight size={15} />
               </button>
             </div>
           )}
           {view !== "brief" && !status.loading && !head && (
             <div className="notice">
-              尚未同步数据。请运行 Python 采集器，再通过本地或线上入库接口发布。
+              暂无可用数据，请稍后刷新。
             </div>
           )}
           {view === "brief" && (
@@ -443,8 +408,10 @@ function App() {
             <Sources status={status.data} loading={status.loading} />
           )}
           <footer>
-            <span>皇室档案 / Royale Atlas</span>
-            <span>国际服链接 · 卡组导入未经游戏内验证</span>
+            <span>皇室档案 · 独立粉丝项目，非 Supercell 官方</span>
+            <button onClick={() => navigate("sources")}>
+              数据来源与说明 <ArrowUpRight size={13} />
+            </button>
           </footer>
         </main>
       </div>

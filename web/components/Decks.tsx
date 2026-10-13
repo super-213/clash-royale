@@ -82,16 +82,15 @@ export function Decks({
           <Heart size={15} />
           我的收藏 <span>{saved.length}</span>
         </button>
-        <span className="tabs-note">8 张卡牌 · 一套配置</span>
       </div>
       {saved.length > 0 && (
         <div className="brief-library-link">
           <span>
             <Heart size={16} />
-            已收藏 {saved.length} 套卡组，可查看相关平衡调整与影响解读。
+            {saved.length} 套收藏
           </span>
           <button onClick={showBrief}>
-            查看更新简报 <ArrowUpRight size={15} />
+            查看调整 <ArrowUpRight size={15} />
           </button>
         </div>
       )}
@@ -179,11 +178,7 @@ export function Decks({
                         ? "历史预设"
                         : d.origins[0]?.kind === "player"
                           ? "玩家卡组"
-                          : "社区收录"}{" "}
-                      ·{" "}
-                      {d.slots.some((s) => s.variant !== "normal")
-                        ? "形态需在游戏内核对"
-                        : "普通卡牌配置"}
+                          : "社区收录"}
                     </span>
                   </div>
                   <button
@@ -208,13 +203,13 @@ export function Decks({
                 </button>
                 <div className="deck-metrics">
                   <span>
-                    <span className="drop">◆</span>平均圣水 <b>{avg}</b>
+                    <span className="drop">◆</span>圣水 <b>{avg}</b>
                   </span>
                   <span>采集于 {date(d.last_seen_at)}</span>
                 </div>
                 <div className="deck-actions">
                   <button onClick={() => open(d)}>
-                    配置与出处 <ArrowUpRight size={15} />
+                    详情 <ArrowUpRight size={15} />
                   </button>
                   <button
                     onClick={() =>
@@ -227,7 +222,7 @@ export function Decks({
                     链接
                   </button>
                   <button onClick={() => buildFrom(d)}>
-                    按当前槽位配卡 <ArrowUpRight size={15} />
+                    用此配卡 <ArrowUpRight size={15} />
                   </button>
                 </div>
               </article>
@@ -249,9 +244,10 @@ export function Decks({
         size={12}
         onChange={setPage}
       />
-      <p className="scope-note">
-        收录范围由已接入来源决定；历史预设不代表当前热门卡组。槽位按已记录形态整理展示，不代表来源的实际槽序或已解锁状态。
-      </p>
+      <details className="scope-details">
+        <summary>收录说明</summary>
+        <p>历史预设不代表当前热门卡组。卡牌按已记录形态展示，特殊形态与解锁状态请在游戏内确认。</p>
+      </details>
     </>
   );
 }
@@ -292,14 +288,10 @@ export function DeckPanel({
           打开游戏 <ExternalLink size={16} />
         </a>
       </div>
-      <p className="scope-note">
-        {deck.slot_order === "explicit"
-          ? "链接按你保存的 8 张卡牌顺序生成。特殊形态不包含在基础链接中，导入后请在游戏内确认。"
-          : "链接根据 8 张卡牌 ID 生成，顺序与上方展示一致，仅导入基础卡牌。槽位按来源已记录形态编排，不代表实际已激活；觉醒/精英形态和解锁状态请在游戏内确认。社区样本合并了不同形态，只能确认基础卡牌组成。尚未经过游戏内导入验证。"}
-      </p>
+      <p className="scope-note">基础链接按展示顺序生成，不含特殊形态。形态与解锁状态请在游戏内确认；导入尚未经过游戏内验证。</p>
       {deck.slot_order === "explicit" ? (
         <p className="scope-note">
-          自己配的卡组 · 槽位和形态按你的选择保存 · 仅在当前浏览器保留
+          自配卡组 · 保存在当前浏览器
         </p>
       ) : (
         <h3>收录出处</h3>

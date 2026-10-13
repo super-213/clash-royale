@@ -174,9 +174,8 @@ export function CardDialog({
       <div className="card-detail-heading">
         <Picture card={card} />
         <div>
-          <span className="eyebrow">{card.key}</span>
           <h2>{card.name}</h2>
-          <p>{card.name_en}</p>
+          {card.name_en !== card.name && <p>{card.name_en}</p>}
           <span className="detail-meta">
             {rarityName[card.rarity] ?? card.rarity} /{" "}
             {typeName[card.type] ?? card.type} / {card.elixir} 圣水
@@ -188,9 +187,7 @@ export function CardDialog({
         {date(release?.source_updated_at)}
         {stale(release) ? " · 已过期，仅供历史参考" : ""}
       </p>
-      <p className="description">
-        {card.description || "官方 API 暂未提供卡牌说明。"}
-      </p>
+      {card.description && <p className="description">{card.description}</p>}
       <h3>战斗参数</h3>
       {Object.keys(card.stats).length ? (
         <>

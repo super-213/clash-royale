@@ -1,7 +1,7 @@
 import type { Release } from "../shared/schema";
 export const names = {
-  brief: "主卡组简报",
-  decks: "卡组资料库",
+  brief: "我的卡组",
+  decks: "卡组",
   cards: "卡牌图鉴",
   balance: "平衡调整",
   sources: "数据来源",

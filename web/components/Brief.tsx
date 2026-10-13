@@ -216,25 +216,23 @@ export function Brief({
       : saved.filter((id) => !decks.items.some((d) => d.id === id));
   return (
     <div className="brief-workspace">
-      <div className="brief-toolbar">
-        <div>
-          <Bookmark size={20} />
-          <strong>我的卡组</strong>
+      {(personal.length > 0 || saved.length > 0) && (
+        <div className="brief-toolbar">
+          <div className="brief-toolbar-actions">
+            <button
+              className="primary"
+              disabled={personal.length >= MAX_PERSONAL_DECKS}
+              onClick={() => editPersonal()}
+            >
+              <Plus size={16} />
+              新建卡组
+            </button>
+            <button onClick={() => browse(saved.length > 0)}>
+              管理收藏 <ArrowUpRight size={15} />
+            </button>
+          </div>
         </div>
-        <div className="brief-toolbar-actions">
-          <button
-            className="primary"
-            disabled={personal.length >= MAX_PERSONAL_DECKS}
-            onClick={() => editPersonal()}
-          >
-            <Plus size={16} />
-            自己配卡组
-          </button>
-          <button onClick={() => browse(saved.length > 0)}>
-            管理收藏 <ArrowUpRight size={15} />
-          </button>
-        </div>
-      </div>
+      )}
       {personalWarning && (
         <p className="notice" role="status">
           {personalWarning}
@@ -271,7 +269,6 @@ export function Brief({
           <section className="brief-edition" aria-label="简报依据">
             <div className="brief-edition-top">
               <div>
-                <span className="brief-label">已收录公告</span>
                 <h2>{edition.title}</h2>
               </div>
               {(feed.data?.editions.length ?? 0) > 1 && (
@@ -292,40 +289,40 @@ export function Brief({
               </a>
             </div>
             <p className="brief-dates">
-              公告发布 {date(edition.publishedOn)} · 采集{" "}
-              {date(edition.observedAt)} · {edition.entries.length} 组调整 /{" "}
+              {date(edition.publishedOn)} · {edition.entries.length} 组调整 /{" "}
               {edition.entries.reduce((n, entry) => n + entry.facts.length, 0)}{" "}
               项数值变化
             </p>
-            <p className="brief-edition-note">
-              {edition.liveVersionVerified
-                ? "已核对正式服版本。"
-                : "尚未在游戏内核对正式服版本。"}
-              {edition.effectiveAt
-                ? `生效日期 ${date(edition.effectiveAt)}。`
-                : "生效日期未核实。"}
-              仅匹配这期公告，不代表完整环境评估。
-            </p>
+            <details className="scope-details brief-edition-note">
+              <summary>
+                公告说明{!edition.liveVersionVerified ? " · 正式服版本待核对" : ""}
+              </summary>
+              <p>
+                {edition.liveVersionVerified
+                  ? "已核对正式服版本。"
+                  : "尚未在游戏内核对正式服版本。"}
+                {edition.effectiveAt
+                  ? `生效日期 ${date(edition.effectiveAt)}。`
+                  : "生效日期未核实。"}
+                仅匹配这期公告，不代表完整环境评估。
+              </p>
+            </details>
           </section>
           {!saved.length && !personal.length ? (
             <div className="empty brief-empty">
               <Heart size={32} />
-              <h2>配好你自己的主卡组</h2>
-              <p>
-                像游戏里一样选择 8
-                张卡牌和特殊形态，保存后就能看到与你相关的调整。
-              </p>
+              <h2>还没有主卡组</h2>
               <button className="primary" onClick={() => editPersonal()}>
                 <Plus size={16} />
-                开始配卡组
+                新建卡组
               </button>
               <button
                 className="brief-empty-secondary"
                 onClick={() => browse()}
               >
-                也可以去资料库收藏 <ArrowUpRight size={15} />
+                浏览卡组 <ArrowUpRight size={15} />
               </button>
-              <small>自配卡组和收藏保存在当前浏览器，无需登录。</small>
+              <small>卡组保存在当前浏览器</small>
             </div>
           ) : decks.error && !personal.length ? (
             <Notice error={decks.error} retry={decks.retry} />
@@ -360,7 +357,7 @@ export function Brief({
                 </span>
               </div>
               <p className="brief-scope">
-                仅检查卡组内的直接调整，未计入对手与环境变化。影响解读为推断，建议结合实际对局观察。
+                仅匹配卡组内的调整；影响解读为推断，不含对手与环境变化。
               </p>
               {missing.length > 0 && (
                 <section className="brief-missing" aria-label="无法读取的收藏">
@@ -409,15 +406,15 @@ export function Brief({
                               {matches.length
                                 ? [
                                     directCards
-                                      ? `${directCards} 张卡牌直接相关`
+                                      ? `${directCards} 张调整`
                                       : "",
                                     possibleCards
-                                      ? `${possibleCards} 张卡牌形态待确认`
+                                      ? `${possibleCards} 张形态待确认`
                                       : "",
                                   ]
                                     .filter(Boolean)
                                     .join(" · ")
-                                : "本期公告未发现直接关联"}
+                                : "本期无直接调整"}
                             </p>
                           </div>
                           <ChevronDown size={18} className="brief-chevron" />
@@ -437,7 +434,7 @@ export function Brief({
                           ))
                         ) : (
                           <p className="brief-no-change">
-                            这期公告没有匹配到这套配置的直接调整。它不代表卡组强度不变，也未评估对手卡组变化带来的间接影响。
+                            本期无直接调整，未评估环境带来的间接影响。
                           </p>
                         )}
                         <div className="brief-deck-actions">
@@ -471,8 +468,7 @@ export function Brief({
                 )}
               </div>
               <p className="scope-note">
-                自配卡组和收藏仅保存在当前浏览器，无需登录。已保存{" "}
-                {personal.length}/{MAX_PERSONAL_DECKS} 套自配卡组。
+                已保存 {personal.length}/{MAX_PERSONAL_DECKS} 套自配卡组 · 仅保存在当前浏览器
               </p>
             </>
           )}

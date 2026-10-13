@@ -96,11 +96,10 @@ export function Balance({
         <div>
           <GitBranch size={23} />
           <div>
-            <strong>参数版本记录</strong>
-            <p>不可变快照 · 父版本追溯 · 任意两版本比较</p>
+            <strong>参数对比</strong>
           </div>
         </div>
-        <span className="tag">检测变化，待核对公告</span>
+        <span className="tag">参数变化 · 非官方公告</span>
       </div>
       {releases.error ? (
         <Notice error={releases.error} retry={releases.retry} />
@@ -112,7 +111,7 @@ export function Balance({
         <>
           <div className="version-layout">
             <aside className="version-history">
-              <h3>提交时间线</h3>
+              <h3>历史版本</h3>
               {allReleases.map((r) => (
                 <button
                   className={to === r.id ? "current" : ""}
