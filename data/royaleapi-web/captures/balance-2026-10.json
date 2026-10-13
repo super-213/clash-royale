@@ -1,0 +1,268 @@
+{
+  "source_url": "https://royaleapi.com/blog/season-88-balance-final-october-2026",
+  "observed_at": "2026-10-13T02:59:24.770Z",
+  "source_updated_at": null,
+  "published_on": "2026-10-04",
+  "capture_method": "browser_dom",
+  "cards": [],
+  "tables": [
+    {
+      "key": "barbarian-barrel",
+      "section": [
+        "barbarian-barrel-nerf",
+        "Barbarian Barrel (Nerf)"
+      ],
+      "rows": [
+        [
+          "Damage -7%",
+          "232 Hit Points",
+          "215 Hit Points"
+        ]
+      ]
+    },
+    {
+      "key": "skeletons",
+      "section": [
+        "skeletons-nerf",
+        "Skeletons (Nerf)"
+      ],
+      "rows": [
+        [
+          "Spawn Radius -29%",
+          "0.74 Tiles",
+          "0.53 Tiles"
+        ]
+      ]
+    },
+    {
+      "key": "cannon-ev1",
+      "section": [
+        "evolved-cannon-nerf",
+        "Evolved Cannon (Nerf)"
+      ],
+      "rows": [
+        [
+          "Barrage Damage -7%",
+          "281 Hit Points",
+          "261 Hit Points"
+        ]
+      ]
+    },
+    {
+      "key": "ice-wizard-hero",
+      "section": [
+        "hero-ice-wizard-nerf",
+        "Hero Ice Wizard (Nerf)"
+      ],
+      "rows": [
+        [
+          "Ability Damage -48%",
+          "89 HP",
+          "46 HP"
+        ]
+      ]
+    },
+    {
+      "key": "ram-rider",
+      "section": [
+        "ram-rider-buff",
+        "Ram Rider (Buff)"
+      ],
+      "rows": [
+        [
+          "Damage +8%",
+          "250 Hit Points",
+          "271 Hit Points"
+        ]
+      ]
+    },
+    {
+      "key": "goblin-barrel",
+      "section": [
+        "goblin-barrel-buff",
+        "Goblin Barrel (Buff)"
+      ],
+      "rows": [
+        [
+          "First Hit Time -25%",
+          "0.4 Seconds",
+          "0.3 Seconds"
+        ]
+      ]
+    },
+    {
+      "key": "lava-hound",
+      "section": [
+        "lava-hound-buff",
+        "Lava Hound (Buff)"
+      ],
+      "rows": [
+        [
+          "Damage +34%",
+          "53 Hit Points",
+          "71 Hit Points"
+        ],
+        [
+          "Hit Speed -13%",
+          "0.77 Hits / Second",
+          "0.67 Hits / Second"
+        ]
+      ]
+    },
+    {
+      "key": "x-bow",
+      "section": [
+        "x-bow-buff",
+        "X-Bow (Buff)"
+      ],
+      "rows": [
+        [
+          "Damage +5%",
+          "58 Hit Points",
+          "61 Hit Points"
+        ]
+      ]
+    },
+    {
+      "key": "wall-breakers",
+      "section": [
+        "wall-breakers-buff",
+        "Wall Breakers (Buff)"
+      ],
+      "rows": [
+        [
+          "Damage +7%",
+          "281 Hit Points",
+          "302 Hit Points"
+        ]
+      ]
+    },
+    {
+      "key": "goblin-drill",
+      "section": [
+        "goblin-drill-buff",
+        "Goblin Drill (Buff)"
+      ],
+      "rows": [
+        [
+          "Tower Damage",
+          "0 Hit Points",
+          "20 Hit Points"
+        ]
+      ]
+    },
+    {
+      "key": "golden-knight",
+      "section": [
+        "golden-knight-rework",
+        "Golden Knight (Rework)"
+      ],
+      "rows": [
+        [
+          "Damage +4%",
+          "161 Hit Points",
+          "168 Hit Points"
+        ],
+        [
+          "Dash Distance -9%",
+          "5.5 Tiles",
+          "5.0 Tiles"
+        ]
+      ]
+    },
+    {
+      "key": "royal-ghost",
+      "section": [
+        "royal-ghost-nerf",
+        "Royal Ghost (Nerf)"
+      ],
+      "rows": [
+        [
+          "HP -5%",
+          "1,210 Hit Points",
+          "1,152 Hit Points"
+        ],
+        [
+          "Damage +1%",
+          "261 Hit Points",
+          "263 Hit Points"
+        ]
+      ]
+    },
+    {
+      "key": "minion-giant",
+      "section": [
+        "minion-giant-nerf",
+        "Minion Giant (Nerf)"
+      ],
+      "rows": [
+        [
+          "Hit Speed -12%",
+          "0.67 Hits / Second",
+          "0.59 Hits / Second"
+        ]
+      ]
+    },
+    {
+      "key": "elixir-collector",
+      "section": [
+        "elixir-collector-nerf",
+        "Elixir Collector (Nerf)"
+      ],
+      "rows": [
+        [
+          "Lifetime +18%",
+          "93 Seconds",
+          "110 Seconds"
+        ],
+        [
+          "Elixir Speed -13%",
+          "0.08 Elixir / Second",
+          "0.07 Elixir / Second"
+        ]
+      ]
+    },
+    {
+      "key": "three-musketeers",
+      "section": [
+        "three-musketeers-buff",
+        "Three Musketeers (Buff)"
+      ],
+      "rows": [
+        [
+          "HP +3%",
+          "883 Hit Points",
+          "906 Hit Points"
+        ]
+      ]
+    },
+    {
+      "key": "monk",
+      "section": [
+        "monk-buff",
+        "Monk (Buff)"
+      ],
+      "rows": [
+        [
+          "Activation Time -25%",
+          "0.9 Seconds",
+          "0.7 Seconds"
+        ]
+      ]
+    },
+    {
+      "key": "elite-barbarians-ev1",
+      "section": [
+        "evolved-elite-barbarians-bugfix",
+        "Evolved Elite Barbarians (Bugfix)"
+      ],
+      "rows": [
+        [
+          "Sight Range +33%",
+          "4.5 Tiles",
+          "6.0 Tiles"
+        ]
+      ]
+    }
+  ]
+}

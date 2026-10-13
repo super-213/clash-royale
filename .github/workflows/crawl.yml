@@ -1,0 +1,98 @@
+name: Crawl
+on:
+  schedule:
+    - cron: "17 0 * * *"
+  workflow_dispatch:
+    inputs:
+      source:
+        type: choice
+        options: [community, archive, official, feed]
+        default: community
+      history:
+        description: "Archive revisions for first bootstrap only (1..30)"
+        default: "1"
+permissions:
+  contents: read
+  actions: read
+jobs:
+  public:
+    if: github.event_name == 'schedule' || inputs.source == 'community' || inputs.source == 'archive' || inputs.source == 'feed'
+    environment: production
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        source: ${{ fromJSON(github.event_name == 'schedule' && '["community","archive"]' || format('["{0}"]', inputs.source)) }}
+    concurrency:
+      group: crawl-${{ matrix.source }}
+      cancel-in-progress: false
+    env:
+      ARENA_API_URL: ${{ vars.ARENA_API_URL }}
+      INGEST_TOKEN: ${{ secrets.INGEST_TOKEN }}
+      GITHUB_TOKEN: ${{ github.token }}
+      CRAWL_SOURCE: ${{ matrix.source }}
+      CRAWL_HISTORY: ${{ inputs.history || '1' }}
+      STATS_FEED_URL: ${{ vars.STATS_FEED_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.9.5"
+      - uses: actions/cache@v4
+        with:
+          path: data/cache
+          key: crawl-http-${{ matrix.source }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: crawl-http-${{ matrix.source }}-
+      - run: python3 scripts/restore-crawl-state.py
+      - run: uv sync --directory crawler --frozen
+      - name: Collect and publish
+        run: |
+          test -n "$ARENA_API_URL"
+          test -n "$INGEST_TOKEN"
+          uv run --directory crawler --frozen python -m arena --source "$CRAWL_SOURCE" --history "$CRAWL_HISTORY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: crawl-state-${{ matrix.source }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            data/outbox/
+            data/runs/
+            data/raw/
+          include-hidden-files: true
+          retention-days: 90
+  official:
+    if: (github.event_name == 'workflow_dispatch' && inputs.source == 'official') || (github.event_name == 'schedule' && vars.ENABLE_OFFICIAL == 'true')
+    environment: production
+    # Set to e.g. ["self-hosted","linux","static-egress"] for IP-restricted official keys.
+    runs-on: ${{ fromJSON(vars.OFFICIAL_RUNNER || '["ubuntu-latest"]') }}
+    concurrency:
+      group: crawl-official
+      cancel-in-progress: false
+    env:
+      ARENA_API_URL: ${{ vars.ARENA_API_URL }}
+      INGEST_TOKEN: ${{ secrets.INGEST_TOKEN }}
+      CLASH_API_TOKEN: ${{ secrets.CLASH_API_TOKEN }}
+      PLAYER_TAGS: ${{ vars.PLAYER_TAGS }}
+      GITHUB_TOKEN: ${{ github.token }}
+      CRAWL_SOURCE: official
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.9.5"
+      - run: python3 scripts/restore-crawl-state.py
+      - run: uv sync --directory crawler --frozen
+      - name: Collect and publish
+        run: |
+          test -n "$ARENA_API_URL"
+          test -n "$INGEST_TOKEN"
+          uv run --directory crawler --frozen python -m arena --source official
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: crawl-state-official-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            data/outbox/
+            data/runs/
+          include-hidden-files: true
+          retention-days: 90

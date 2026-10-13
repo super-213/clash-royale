@@ -1,0 +1,1137 @@
+{
+  "source_url": "https://royaleapi.com/cards/popular?sort=rating",
+  "observed_at": "2026-10-13T02:59:33.226Z",
+  "source_updated_at": null,
+  "capture_method": "browser_dom",
+  "cards": [
+    {
+      "key": "cannon-cart",
+      "name": "Cannon Cart",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "lava-hound",
+      "name": "Lava Hound",
+      "type": "Troop",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "rascals",
+      "name": "Rascals",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "mortar-ev1",
+      "name": "Mortar Evolution",
+      "type": "Building",
+      "rarity": "Common"
+    },
+    {
+      "key": "zap-ev1",
+      "name": "Zap Evolution",
+      "type": "Spell",
+      "rarity": "Common"
+    },
+    {
+      "key": "heal-spirit",
+      "name": "Heal Spirit",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "zappies",
+      "name": "Zappies",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "royal-ghost-ev1",
+      "name": "Royal Ghost Evolution",
+      "type": "Troop",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "barbarian-barrel",
+      "name": "Barbarian Barrel",
+      "type": "Spell",
+      "rarity": "Epic"
+    },
+    {
+      "key": "goblin-giant-ev1",
+      "name": "Goblin Giant Evolution",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "three-musketeers",
+      "name": "Three Musketeers",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "battle-ram-ev1",
+      "name": "Battle Ram Evolution",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "goblins-hero",
+      "name": "Hero Goblins",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "bandit",
+      "name": "Bandit",
+      "type": "Troop",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "skeleton-dragons",
+      "name": "Skeleton Dragons",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "barbarians-ev1",
+      "name": "Barbarians Evolution",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "graveyard",
+      "name": "Graveyard",
+      "type": "Spell",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "minion-horde-ev1",
+      "name": "Minion Horde Evolution",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "furnace",
+      "name": "Furnace",
+      "type": "Building",
+      "rarity": "Rare"
+    },
+    {
+      "key": "goblin-cage-ev1",
+      "name": "Goblin Cage Evolution",
+      "type": "Building",
+      "rarity": "Rare"
+    },
+    {
+      "key": "giant-hero",
+      "name": "Hero Giant",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "goblin-cage",
+      "name": "Goblin Cage",
+      "type": "Building",
+      "rarity": "Rare"
+    },
+    {
+      "key": "mother-witch",
+      "name": "Mother Witch",
+      "type": "Troop",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "rune-giant",
+      "name": "Rune Giant",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "suspicious-bush",
+      "name": "Suspicious Bush",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "barbarian-barrel-hero",
+      "name": "Hero Barbarian Barrel",
+      "type": "Spell",
+      "rarity": "Epic"
+    },
+    {
+      "key": "skeleton-barrel-ev1",
+      "name": "Skeleton Barrel Evolution",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "bowler",
+      "name": "Bowler",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "ice-wizard-hero",
+      "name": "Hero Ice Wizard",
+      "type": "Troop",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "baby-dragon-ev1",
+      "name": "Baby Dragon Evolution",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "phoenix",
+      "name": "Phoenix",
+      "type": "Troop",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "inferno-dragon-ev1",
+      "name": "Inferno Dragon Evolution",
+      "type": "Troop",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "spirit-empress",
+      "name": "Spirit Empress",
+      "type": "Spell",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "elixir-collector",
+      "name": "Elixir Collector",
+      "type": "Building",
+      "rarity": "Rare"
+    },
+    {
+      "key": "royal-ghost",
+      "name": "Royal Ghost",
+      "type": "Troop",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "flying-machine",
+      "name": "Flying Machine",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "giant",
+      "name": "Giant",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "dark-prince",
+      "name": "Dark Prince",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "bats-ev1",
+      "name": "Bats Evolution",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "knight-ev1",
+      "name": "Knight Evolution",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "goblin-demolisher",
+      "name": "Goblin Demolisher",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "mega-minion-hero",
+      "name": "Hero Mega Minion",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "minions",
+      "name": "Minions",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "skeleton-army-ev1",
+      "name": "Skeleton Army Evolution",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "royal-recruits-ev1",
+      "name": "Royal Recruits Evolution",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "x-bow",
+      "name": "X-Bow",
+      "type": "Building",
+      "rarity": "Epic"
+    },
+    {
+      "key": "goblin-hut",
+      "name": "Goblin Hut",
+      "type": "Building",
+      "rarity": "Rare"
+    },
+    {
+      "key": "archers-ev1",
+      "name": "Archers Evolution",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "bowler-hero",
+      "name": "Hero Bowler",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "archer-queen",
+      "name": "Archer Queen",
+      "type": "Troop",
+      "rarity": "Champion"
+    },
+    {
+      "key": "tombstone",
+      "name": "Tombstone",
+      "type": "Building",
+      "rarity": "Rare"
+    },
+    {
+      "key": "bomb-tower",
+      "name": "Bomb Tower",
+      "type": "Building",
+      "rarity": "Rare"
+    },
+    {
+      "key": "night-witch",
+      "name": "Night Witch",
+      "type": "Troop",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "golem",
+      "name": "Golem",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "giant-snowball-ev1",
+      "name": "Giant Snowball Evolution",
+      "type": "Spell",
+      "rarity": "Common"
+    },
+    {
+      "key": "little-prince",
+      "name": "Little Prince",
+      "type": "Troop",
+      "rarity": "Champion"
+    },
+    {
+      "key": "skeleton-king",
+      "name": "Skeleton King",
+      "type": "Troop",
+      "rarity": "Champion"
+    },
+    {
+      "key": "goblin-barrel-ev1",
+      "name": "Goblin Barrel Evolution",
+      "type": "Spell",
+      "rarity": "Epic"
+    },
+    {
+      "key": "sparky",
+      "name": "Sparky",
+      "type": "Troop",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "vines",
+      "name": "Vines",
+      "type": "Spell",
+      "rarity": "Epic"
+    },
+    {
+      "key": "giant-skeleton",
+      "name": "Giant Skeleton",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "balloon-hero",
+      "name": "Hero Balloon",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "tornado",
+      "name": "Tornado",
+      "type": "Spell",
+      "rarity": "Epic"
+    },
+    {
+      "key": "bomber",
+      "name": "Bomber",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "electro-giant-ev1",
+      "name": "Electro Giant Evolution",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "hunter",
+      "name": "Hunter",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "pekka",
+      "name": "P.E.K.K.A",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "fireball",
+      "name": "Fireball",
+      "type": "Spell",
+      "rarity": "Rare"
+    },
+    {
+      "key": "dark-prince-hero",
+      "name": "Hero Dark Prince",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "elite-barbarians-ev1",
+      "name": "Elite Barbarians Evolution",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "wall-breakers",
+      "name": "Wall Breakers",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "rage",
+      "name": "Rage",
+      "type": "Spell",
+      "rarity": "Epic"
+    },
+    {
+      "key": "minion-giant",
+      "name": "Minion Giant",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "ice-golem",
+      "name": "Ice Golem",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "miner",
+      "name": "Miner",
+      "type": "Troop",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "princess-ev1",
+      "name": "Princess Evolution",
+      "type": "Troop",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "tower-princess",
+      "name": "Tower Princess",
+      "type": "Tower",
+      "rarity": "Common"
+    },
+    {
+      "key": "fisherman",
+      "name": "Fisherman",
+      "type": "Troop",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "lightning",
+      "name": "Lightning",
+      "type": "Spell",
+      "rarity": "Epic"
+    },
+    {
+      "key": "poison",
+      "name": "Poison",
+      "type": "Spell",
+      "rarity": "Epic"
+    },
+    {
+      "key": "cannon-ev1",
+      "name": "Cannon Evolution",
+      "type": "Building",
+      "rarity": "Common"
+    },
+    {
+      "key": "royal-hogs-ev1",
+      "name": "Royal Hogs Evolution",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "freeze",
+      "name": "Freeze",
+      "type": "Spell",
+      "rarity": "Epic"
+    },
+    {
+      "key": "lumberjack-ev1",
+      "name": "Lumberjack Evolution",
+      "type": "Troop",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "goblins",
+      "name": "Goblins",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "goblin-curse",
+      "name": "Goblin Curse",
+      "type": "Spell",
+      "rarity": "Epic"
+    },
+    {
+      "key": "goblin-drill-ev1",
+      "name": "Goblin Drill Evolution",
+      "type": "Building",
+      "rarity": "Epic"
+    },
+    {
+      "key": "princess",
+      "name": "Princess",
+      "type": "Troop",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "goblin-gang",
+      "name": "Goblin Gang",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "skeletons",
+      "name": "Skeletons",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "earthquake",
+      "name": "Earthquake",
+      "type": "Spell",
+      "rarity": "Rare"
+    },
+    {
+      "key": "berserker-hero",
+      "name": "Hero Berserker",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "royal-hogs",
+      "name": "Royal Hogs",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "electro-wizard",
+      "name": "Electro Wizard",
+      "type": "Troop",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "berserker",
+      "name": "Berserker",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "golden-knight",
+      "name": "Golden Knight",
+      "type": "Troop",
+      "rarity": "Champion"
+    },
+    {
+      "key": "balloon",
+      "name": "Balloon",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "mega-minion",
+      "name": "Mega Minion",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "furnace-ev1",
+      "name": "Furnace Evolution",
+      "type": "Building",
+      "rarity": "Rare"
+    },
+    {
+      "key": "goblin-giant",
+      "name": "Goblin Giant",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "goblinstein",
+      "name": "Goblinstein",
+      "type": "Troop",
+      "rarity": "Champion"
+    },
+    {
+      "key": "mighty-miner",
+      "name": "Mighty Miner",
+      "type": "Troop",
+      "rarity": "Champion"
+    },
+    {
+      "key": "knight",
+      "name": "Knight",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "barbarians",
+      "name": "Barbarians",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "ram-rider",
+      "name": "Ram Rider",
+      "type": "Troop",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "zap",
+      "name": "Zap",
+      "type": "Spell",
+      "rarity": "Common"
+    },
+    {
+      "key": "ice-spirit",
+      "name": "Ice Spirit",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "monk",
+      "name": "Monk",
+      "type": "Troop",
+      "rarity": "Champion"
+    },
+    {
+      "key": "hunter-ev1",
+      "name": "Hunter Evolution",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "bomber-ev1",
+      "name": "Bomber Evolution",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "giant-snowball",
+      "name": "Giant Snowball",
+      "type": "Spell",
+      "rarity": "Common"
+    },
+    {
+      "key": "skeletons-ev1",
+      "name": "Skeletons Evolution",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "knight-hero",
+      "name": "Hero Knight",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "tombstone-hero",
+      "name": "Hero Tombstone",
+      "type": "Building",
+      "rarity": "Rare"
+    },
+    {
+      "key": "royal-giant-ev1",
+      "name": "Royal Giant Evolution",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "wall-breakers-ev1",
+      "name": "Wall Breakers Evolution",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "wizard-ev1",
+      "name": "Wizard Evolution",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "musketeer-ev1",
+      "name": "Musketeer Evolution",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "prince",
+      "name": "Prince",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "lumberjack",
+      "name": "Lumberjack",
+      "type": "Troop",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "ice-golem-hero",
+      "name": "Hero Ice Golem",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "ice-wizard",
+      "name": "Ice Wizard",
+      "type": "Troop",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "guards",
+      "name": "Guards",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "magic-archer",
+      "name": "Magic Archer",
+      "type": "Troop",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "electro-dragon-ev1",
+      "name": "Electro Dragon Evolution",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "pekka-ev1",
+      "name": "P.E.K.K.A Evolution",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "arrows",
+      "name": "Arrows",
+      "type": "Spell",
+      "rarity": "Common"
+    },
+    {
+      "key": "dart-goblin",
+      "name": "Dart Goblin",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "the-log",
+      "name": "The Log",
+      "type": "Spell",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "fire-spirit",
+      "name": "Fire Spirit",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "inferno-tower",
+      "name": "Inferno Tower",
+      "type": "Building",
+      "rarity": "Rare"
+    },
+    {
+      "key": "electro-wizard-hero",
+      "name": "Hero Electro Wizard",
+      "type": "Troop",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "electro-spirit",
+      "name": "Electro Spirit",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "mini-pekka-hero",
+      "name": "Hero Mini P.E.K.K.A",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "royal-chef",
+      "name": "Royal Chef",
+      "type": "Tower",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "void",
+      "name": "Void",
+      "type": "Spell",
+      "rarity": "Epic"
+    },
+    {
+      "key": "mini-pekka",
+      "name": "Mini P.E.K.K.A",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "tesla-ev1",
+      "name": "Tesla Evolution",
+      "type": "Building",
+      "rarity": "Common"
+    },
+    {
+      "key": "royal-delivery",
+      "name": "Royal Delivery",
+      "type": "Spell",
+      "rarity": "Common"
+    },
+    {
+      "key": "rocket",
+      "name": "Rocket",
+      "type": "Spell",
+      "rarity": "Rare"
+    },
+    {
+      "key": "spear-goblins",
+      "name": "Spear Goblins",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "royal-recruits",
+      "name": "Royal Recruits",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "dart-goblin-ev1",
+      "name": "Dart Goblin Evolution",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "cannon",
+      "name": "Cannon",
+      "type": "Building",
+      "rarity": "Common"
+    },
+    {
+      "key": "executioner-ev1",
+      "name": "Executioner Evolution",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "magic-archer-hero",
+      "name": "Hero Magic Archer",
+      "type": "Troop",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "battle-healer",
+      "name": "Battle Healer",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "elixir-golem",
+      "name": "Elixir Golem",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "baby-dragon",
+      "name": "Baby Dragon",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "musketeer-hero",
+      "name": "Hero Musketeer",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "valkyrie-hero",
+      "name": "Hero Valkyrie",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "cannoneer",
+      "name": "Cannoneer",
+      "type": "Tower",
+      "rarity": "Epic"
+    },
+    {
+      "key": "goblin-drill",
+      "name": "Goblin Drill",
+      "type": "Building",
+      "rarity": "Epic"
+    },
+    {
+      "key": "ronin",
+      "name": "Ronin",
+      "type": "Troop",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "boss-bandit",
+      "name": "Boss Bandit",
+      "type": "Troop",
+      "rarity": "Champion"
+    },
+    {
+      "key": "battle-ram",
+      "name": "Battle Ram",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "mega-knight-ev1",
+      "name": "Mega Knight Evolution",
+      "type": "Troop",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "hog-rider",
+      "name": "Hog Rider",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "bats",
+      "name": "Bats",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "witch-ev1",
+      "name": "Witch Evolution",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "dagger-duchess",
+      "name": "Dagger Duchess",
+      "type": "Tower",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "archers",
+      "name": "Archers",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "inferno-dragon",
+      "name": "Inferno Dragon",
+      "type": "Troop",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "firecracker-ev1",
+      "name": "Firecracker Evolution",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "wizard-hero",
+      "name": "Hero Wizard",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "skeleton-army",
+      "name": "Skeleton Army",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "clone",
+      "name": "Clone",
+      "type": "Spell",
+      "rarity": "Epic"
+    },
+    {
+      "key": "mega-knight",
+      "name": "Mega Knight",
+      "type": "Troop",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "valkyrie-ev1",
+      "name": "Valkyrie Evolution",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "musketeer",
+      "name": "Musketeer",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "goblin-barrel",
+      "name": "Goblin Barrel",
+      "type": "Spell",
+      "rarity": "Epic"
+    },
+    {
+      "key": "tesla",
+      "name": "Tesla",
+      "type": "Building",
+      "rarity": "Common"
+    },
+    {
+      "key": "goblin-machine",
+      "name": "Goblin Machine",
+      "type": "Troop",
+      "rarity": "Legendary"
+    },
+    {
+      "key": "mortar",
+      "name": "Mortar",
+      "type": "Building",
+      "rarity": "Common"
+    },
+    {
+      "key": "ice-spirit-ev1",
+      "name": "Ice Spirit Evolution",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "electro-giant",
+      "name": "Electro Giant",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "barbarian-hut",
+      "name": "Barbarian Hut",
+      "type": "Building",
+      "rarity": "Rare"
+    },
+    {
+      "key": "executioner",
+      "name": "Executioner",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "skeleton-barrel",
+      "name": "Skeleton Barrel",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "royal-giant",
+      "name": "Royal Giant",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "valkyrie",
+      "name": "Valkyrie",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "elite-barbarians",
+      "name": "Elite Barbarians",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "minion-horde",
+      "name": "Minion Horde",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "firecracker",
+      "name": "Firecracker",
+      "type": "Troop",
+      "rarity": "Common"
+    },
+    {
+      "key": "mirror",
+      "name": "Mirror",
+      "type": "Spell",
+      "rarity": "Epic"
+    },
+    {
+      "key": "wizard",
+      "name": "Wizard",
+      "type": "Troop",
+      "rarity": "Rare"
+    },
+    {
+      "key": "electro-dragon",
+      "name": "Electro Dragon",
+      "type": "Troop",
+      "rarity": "Epic"
+    },
+    {
+      "key": "witch",
+      "name": "Witch",
+      "type": "Troop",
+      "rarity": "Epic"
+    }
+  ],
+  "tables": []
+}

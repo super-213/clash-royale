@@ -1,0 +1,9 @@
+[project]
+name = "royale-atlas-crawler"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = []
+[dependency-groups]
+dev = ["pytest>=8.3,<10"]
+[tool.pytest.ini_options]
+pythonpath = ["."]

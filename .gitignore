@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.wrangler/
+.dev.vars
+.env
+.env.*
+!.env.example
+crawler/.venv/
+__pycache__/
+.pytest_cache/
+data/cache/
+data/raw/
+data/outbox/
+data/runs/
+*.local
+.DS_Store
