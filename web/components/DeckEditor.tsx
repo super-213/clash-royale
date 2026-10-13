@@ -541,7 +541,7 @@ export function DeckEditor({
           }
           onClick={submit}
         >
-          {filled < 8 ? `还差 ${8 - filled} 张` : "保存并查看简报"}
+          {filled < 8 ? `还差 ${8 - filled} 张` : "保存卡组"}
         </button>
       </footer>
     </dialog>

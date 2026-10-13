@@ -31,7 +31,7 @@ export function Decks({
   setOnlySaved,
   saved,
   save,
-  showBrief,
+  showMyDecks,
   buildFrom,
   dictionary,
   copy,
@@ -48,7 +48,7 @@ export function Decks({
   setOnlySaved: (v: boolean) => void;
   saved: string[];
   save: (id: string) => void;
-  showBrief: () => void;
+  showMyDecks: () => void;
   buildFrom: (deck: Deck) => void;
   dictionary: Record<number, DisplayCard>;
   copy: (t: string) => void;
@@ -91,8 +91,8 @@ export function Decks({
             <Heart size={16} />
             {saved.length} 套收藏
           </span>
-          <button onClick={showBrief}>
-            查看调整 <ArrowUpRight size={15} />
+          <button onClick={showMyDecks}>
+            我的卡组 <ArrowUpRight size={15} />
           </button>
         </div>
       )}

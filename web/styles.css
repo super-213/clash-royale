@@ -267,21 +267,14 @@ td.after { background: #edf5ff; color: #1c61b6; }
 main > footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 40px; padding: 22px 0 calc(22px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
 main > footer button { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; color: var(--accent); font-size: 12px; }
 
-/* Personal decks: the announcement is secondary to the player's cards. */
-.brief-library-link, .brief-toolbar, .brief-toolbar-actions, .brief-library-link > span, .brief-edition-top, .brief-change-heading, .brief-deck-actions { display: flex; align-items: center; gap: 12px; }
+/* Personal and saved decks. */
+.brief-library-link, .brief-toolbar, .brief-toolbar-actions, .brief-library-link > span, .brief-deck-actions { display: flex; align-items: center; gap: 12px; }
 .brief-library-link { justify-content: space-between; padding: 0 0 12px; margin-bottom: 14px; color: var(--muted); font-size: 12px; }
-.brief-library-link button, .brief-toolbar button:not(.primary), .brief-edition a, .brief-change-heading a, .brief-deck-actions button, .brief-missing button { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: var(--accent); font-size: 12px; }
+.brief-library-link button, .brief-toolbar button:not(.primary), .brief-deck-actions button, .brief-missing button { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: var(--accent); font-size: 12px; }
 .brief-toolbar { justify-content: flex-end; padding-bottom: 20px; }
 .brief-toolbar-actions { flex-wrap: wrap; gap: 16px; }
-.brief-edition { padding: 18px 22px; margin-bottom: 24px; border-left: 5px solid var(--blue); border-radius: 0 12px 12px 0; background: #fff; }
-.brief-edition-top { justify-content: space-between; flex-wrap: wrap; }
-.brief-label { display: block; margin-bottom: 8px; color: var(--muted); font-size: 11px; font-weight: 600; }
-.brief-edition h2 { margin: 0; font-size: 20px; }
-.brief-dates { margin: 10px 0 0; color: var(--muted); font-size: 12px; }
-.brief-edition-note { margin-top: 8px; }
-.brief-overview { display: flex; flex-wrap: wrap; gap: 26px; padding: 16px 0; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+.brief-overview { margin-bottom: 24px; display: flex; flex-wrap: wrap; gap: 26px; padding: 16px 0; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 12px; }
 .brief-overview b { margin-right: 4px; color: var(--accent); font-size: 24px; font-weight: 800; }
-.brief-scope { margin: 12px 0 24px; color: var(--muted); font-size: 12px; line-height: 1.8; }
 .brief-deck { margin-bottom: 24px; border: 2px solid #bdcbdc; border-radius: 14px; background: #fff; box-shadow: 0 4px 0 #c8d2df; overflow: hidden; }
 .brief-deck summary { cursor: pointer; list-style: none; padding: 20px; border-top: 5px solid var(--blue); }
 .brief-deck:nth-child(even) summary { border-top-color: var(--red); }
@@ -295,27 +288,9 @@ main > footer button { display: inline-flex; align-items: center; gap: 4px; min-
 .brief-chevron { flex-shrink: 0; color: var(--accent); transition: transform .18s; }
 .brief-deck[open] .brief-chevron { transform: rotate(180deg); }
 .brief-deck-body { padding: 0 22px; animation: enter .2s both; }
-.brief-change { padding: 22px 0; border-top: 1px solid var(--line); }
-.brief-change-heading { flex-wrap: wrap; gap: 9px; margin-bottom: 16px; }
-.brief-change-heading h3 { margin: 0; font-size: 16px; }
-.brief-change-heading h3 small { margin-left: 5px; font-size: 11px; font-weight: 400; }
-.brief-change-heading a { margin-left: auto; }
-.brief-category, .brief-pending { padding: 4px 7px; border-radius: 5px; background: var(--blue-soft); color: var(--accent); font-size: 11px; }
-.brief-category.buff { background: #e5f4ec; color: var(--success); }
-.brief-category.nerf { background: var(--red-soft); color: #a52e3d; }
-.brief-pending { background: #fff0ce; color: var(--warning); }
-.brief-match-note { color: var(--warning); font-size: 12px; line-height: 1.8; margin-bottom: 20px; }
-.brief-facts table { font-size: 12px; }
-.brief-facts th, .brief-facts td { padding: 11px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
-.brief-facts th:first-child { padding-left: 0; }
-.brief-facts td:nth-child(3) { color: var(--accent); font-weight: 700; }
-.brief-facts > small { display: block; margin-top: 9px; font-size: 11px; line-height: 1.8; }
-.brief-reading { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 22px; }
-.brief-reading p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.85; }
 .brief-deck-actions { flex-wrap: wrap; justify-content: flex-start; gap: 10px 20px; padding: 6px 0 18px; }
 .brief-deck-actions > button:last-child { margin-left: auto; }
 .brief-deck-actions button:last-child { color: var(--muted); }
-.brief-no-change { margin: 0; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; line-height: 1.85; }
 .brief-empty { min-height: 350px; padding: 30px 20px; background: #e8eff8; border: 2px dashed #afc1d7; border-radius: 16px; }
 .brief-empty h2 { margin: 0 0 8px; color: var(--ink); font-size: 22px; }
 .brief-empty .primary { flex: none; }
@@ -340,7 +315,6 @@ main > footer button { display: inline-flex; align-items: center; gap: 4px; min-
 .deck-slot-frame .picture { width: 100%; max-width: none; margin: 0; }
 .deck-slot-frame .elixir { min-width: 20px; height: 23px; font-size: 11px; }
 .deck-slot.is-conflict .deck-slot-frame { border-color: var(--red); }
-.deck-slot.has-change .deck-slot-frame { border-color: var(--blue); box-shadow: 0 0 0 2px #8fbcff; }
 .deck-slot-conflict { margin: 14px 0 0; text-align: left; color: #a83542; font-size: 12px; line-height: 1.8; }
 .deck-layout--detail { margin: 24px 0; }
 .deck-layout--detail .deck-slot-grid { max-width: 460px; gap: 18px 16px; }
@@ -531,8 +505,6 @@ main > footer button { display: inline-flex; align-items: center; gap: 4px; min-
   main > footer { flex-direction: column; align-items: flex-start; gap: 0; margin-top: 32px; font-size: 11px; line-height: 1.8; }
   .brief-toolbar { padding-bottom: 20px; }
   .brief-toolbar-actions { gap: 14px; }
-  .brief-edition { padding: 16px; margin-bottom: 20px; }
-  .brief-edition h2 { font-size: 18px; }
   .brief-overview { gap: 14px; font-size: 11px; }
   .brief-overview b { font-size: 21px; }
   .brief-library-link { align-items: center; gap: 6px; }
@@ -542,9 +514,6 @@ main > footer button { display: inline-flex; align-items: center; gap: 4px; min-
   .brief-deck-heading h2 { font-size: 16px; }
   .brief-deck-heading p { font-size: 11px; }
   .brief-deck-body { padding: 0 16px; }
-  .brief-reading { grid-template-columns: 1fr; gap: 18px; }
-  .brief-change-heading a { margin-left: 0; }
-  .brief-facts th, .brief-facts td { padding: 10px 8px; }
   .deck-layout--brief { margin-left: 0; }
   .deck-layout--detail .deck-slot-grid { gap: 14px 10px; }
   .deck-editor-dialog { width: 100%; height: 100svh; max-height: 100svh; margin: 0; border: 0; border-radius: 0; }

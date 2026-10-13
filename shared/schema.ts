@@ -30,10 +30,7 @@ export const cardSchema = z.object({
 });
 export const releaseSchema = z
   .object({
-    stream: z
-      .string()
-      .regex(/^[a-z0-9-]+$/)
-      .max(60),
+    stream: z.enum(["cr-data-community", "supercell-api"]),
     revision: z.string().min(1).max(150),
     source_url: https,
     source_updated_at: z.iso.datetime(),
@@ -42,6 +39,11 @@ export const releaseSchema = z
     cards: z.array(cardSchema).min(1).max(500),
   })
   .superRefine((v, c) => {
+    if (v.cards.some((card) => Object.keys(card.stats).length > 0))
+      c.addIssue({
+        code: "custom",
+        message: "Combat parameter ingestion is disabled; display catalogs require empty stats",
+      });
     if (
       new Set(v.cards.map((x) => x.id)).size !== v.cards.length ||
       new Set(v.cards.map((x) => x.key)).size !== v.cards.length

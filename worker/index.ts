@@ -8,12 +8,11 @@ import {
   type Deck,
   type Card,
 } from "../shared/schema";
-import { digest, compareCards } from "../shared/versioning";
-import { readCards, publishRelease, publishDecks } from "./store";
-import { balanceEditions, briefCards } from "./balance-feed";
+import { digest } from "../shared/versioning";
+import { publishRelease, publishDecks } from "./store";
 import { builderCards } from "./builder-feed";
 import { deckWhere } from "./deck-query";
-const PUBLIC_CACHE = "royale-public-v2";
+const PUBLIC_CACHE = "royale-public-v4";
 type Env = {
   DB: D1Database;
   ASSETS: Fetcher;
@@ -41,8 +40,7 @@ app.use("/api/*", async (c, next) => {
   url.searchParams.sort();
   const key = new Request(url.toString());
   const immutable =
-    path === "/api/compare" ||
-    (path.startsWith("/api/cards") && url.searchParams.has("release"));
+    path === "/api/cards/dictionary" && url.searchParams.has("release");
   const ttl = immutable ? 86400 : 60;
   const cache = await caches.open(PUBLIC_CACHE).catch(() => null);
   try {
@@ -176,13 +174,13 @@ app.post("/api/ingest/run", async (c) => {
 app.get("/api/status", async (c) => {
   const [heads, decks, runs] = await Promise.all([
     c.env.DB.prepare(
-      "SELECT r.*,h.latest_source_updated_at,h.last_observed_at FROM heads h JOIN releases r ON r.id=h.release_id ORDER BY r.stream",
+      "SELECT r.*,h.latest_source_updated_at,h.last_observed_at FROM heads h JOIN releases r ON r.id=h.release_id WHERE r.stream IN ('cr-data-community','supercell-api') ORDER BY r.stream",
     ).all<Release>(),
     c.env.DB.prepare(
       "SELECT count FROM catalog_totals WHERE name='visible_decks'",
     ).first<{ count: number }>(),
     c.env.DB.prepare(
-      "SELECT source,started_at,finished_at,status,count,message FROM crawl_runs WHERE id IN (SELECT id FROM (SELECT id,ROW_NUMBER() OVER (PARTITION BY source ORDER BY finished_at DESC) AS rank FROM crawl_runs) WHERE rank=1) ORDER BY source",
+      "SELECT source,started_at,finished_at,status,count,message FROM crawl_runs WHERE source IN ('community','official') AND id IN (SELECT id FROM (SELECT id,ROW_NUMBER() OVER (PARTITION BY source ORDER BY finished_at DESC) AS rank FROM crawl_runs) WHERE rank=1) ORDER BY source",
     ).all(),
   ]);
   return c.json({
@@ -191,101 +189,10 @@ app.get("/api/status", async (c) => {
     runs: runs.results,
   });
 });
-app.get("/api/balance-briefs", (c) =>
-  c.json({ editions: balanceEditions, cards: briefCards }),
-);
 app.get("/api/deck-builder", (c) => c.json({ cards: builderCards }));
-app.get("/api/releases", async (c) => {
-  const stream = z
-    .string()
-    .regex(/^[a-z0-9-]{1,60}$/)
-    .parse(c.req.query("stream") ?? "royaleapi-archive");
-  const page = z.coerce
-    .number()
-    .int()
-    .min(1)
-    .max(10000)
-    .parse(c.req.query("page") ?? 1);
-  const r = await c.env.DB.prepare(
-    "SELECT * FROM releases WHERE stream=? ORDER BY source_updated_at DESC LIMIT 30 OFFSET ?",
-  )
-    .bind(stream, (page - 1) * 30)
-    .all<Release>();
-  return c.json({ items: r.results, page });
-});
-app.get("/api/cards", async (c) => {
-  const q = z
-    .object({
-      stream: z
-        .string()
-        .regex(/^[a-z0-9-]{1,60}$/)
-        .default("royaleapi-archive"),
-      release: z
-        .string()
-        .regex(/^[a-f0-9]{64}$/)
-        .optional(),
-      q: z.string().max(100).default(""),
-      type: z.string().max(50).default(""),
-      rarity: z.string().max(50).default(""),
-      elixir: z.coerce.number().int().min(0).max(20).optional(),
-      page: z.coerce.number().int().min(1).max(10000).default(1),
-      limit: z.coerce.number().int().min(1).max(48).default(24),
-    })
-    .parse(c.req.query());
-  const release = q.release
-    ? await c.env.DB.prepare("SELECT * FROM releases WHERE id=? AND stream=?")
-        .bind(q.release, q.stream)
-        .first<Release>()
-    : await c.env.DB.prepare(
-        "SELECT r.* FROM heads h JOIN releases r ON r.id=h.release_id WHERE h.stream=?",
-      )
-        .bind(q.stream)
-        .first<Release>();
-  if (!release)
-    return c.json({ items: [], total: 0, release: null, page: q.page });
-  const clauses = ["release_id=?"];
-  const values: (string | number)[] = [release.id];
-  if (q.q) {
-    clauses.push(
-      "(instr(lower(name),lower(?))>0 OR instr(lower(name_en),lower(?))>0 OR instr(key,?)>0)",
-    );
-    values.push(q.q, q.q, q.q);
-  }
-  if (q.type) {
-    clauses.push("type=?");
-    values.push(q.type);
-  }
-  if (q.rarity) {
-    clauses.push("rarity=?");
-    values.push(q.rarity);
-  }
-  if (q.elixir !== undefined) {
-    clauses.push("elixir=?");
-    values.push(q.elixir);
-  }
-  const where = clauses.join(" AND ");
-  const [rows, total] = await Promise.all([
-    c.env.DB.prepare(
-      `SELECT doc FROM card_versions WHERE ${where} ORDER BY elixir,card_id LIMIT ? OFFSET ?`,
-    )
-      .bind(...values, q.limit, (q.page - 1) * q.limit)
-      .all<{ doc: string }>(),
-    c.env.DB.prepare(
-      `SELECT COUNT(*) AS count FROM card_versions WHERE ${where}`,
-    )
-      .bind(...values)
-      .first<{ count: number }>(),
-  ]);
-  return c.json({
-    items: rows.results.map((x) => JSON.parse(x.doc)),
-    total: total?.count ?? 0,
-    release,
-    page: q.page,
-  });
-});
 app.get("/api/cards/dictionary", async (c) => {
   const q = z.object({
-    stream: z.string().regex(/^[a-z0-9-]{1,60}$/),
+    stream: z.enum(["cr-data-community", "supercell-api"]),
     release: z.string().regex(/^[a-f0-9]{64}$/),
   }).parse(c.req.query());
   const release = await c.env.DB.prepare("SELECT id FROM releases WHERE id=? AND stream=?")
@@ -296,62 +203,6 @@ app.get("/api/cards/dictionary", async (c) => {
     "SELECT json_set(doc,'$.stats',json('{}')) AS doc FROM card_versions WHERE release_id=? ORDER BY card_id",
   ).bind(q.release).all<{ doc: string }>();
   return c.json({ cards: rows.results.map((row) => JSON.parse(row.doc) as Card) });
-});
-app.get("/api/cards/:id", async (c) => {
-  const id = z.coerce.number().int().parse(c.req.param("id"));
-  const stream = z
-    .string()
-    .regex(/^[a-z0-9-]{1,60}$/)
-    .parse(c.req.query("stream") ?? "royaleapi-archive");
-  const release = c.req.query("release")
-    ? z
-        .string()
-        .regex(/^[a-f0-9]{64}$/)
-        .parse(c.req.query("release"))
-    : (
-        await c.env.DB.prepare("SELECT release_id FROM heads WHERE stream=?")
-          .bind(stream)
-          .first<{ release_id: string }>()
-      )?.release_id;
-  if (!release) return c.json({ error: "No release" }, 404);
-  const row = await c.env.DB.prepare(
-    "SELECT cv.doc FROM card_versions cv JOIN releases r ON r.id=cv.release_id WHERE cv.release_id=? AND cv.card_id=? AND r.stream=?",
-  )
-    .bind(release, id, stream)
-    .first<{ doc: string }>();
-  if (!row) return c.json({ error: "Card not found" }, 404);
-  const history = await c.env.DB.prepare(
-    "SELECT r.id,r.title,r.source_updated_at,c.kind,json_array_length(c.fields) AS fields_count FROM changes c JOIN releases r ON r.id=c.release_id WHERE c.card_id=? AND r.stream=? ORDER BY r.source_updated_at DESC LIMIT 50",
-  )
-    .bind(id, stream)
-    .all();
-  return c.json({ card: JSON.parse(row.doc), history: history.results });
-});
-app.get("/api/compare", async (c) => {
-  const from = z
-      .string()
-      .regex(/^[a-f0-9]{64}$/)
-      .parse(c.req.query("from")),
-    to = z
-      .string()
-      .regex(/^[a-f0-9]{64}$/)
-      .parse(c.req.query("to"));
-  const [a, b] = await Promise.all([
-    c.env.DB.prepare("SELECT * FROM releases WHERE id=?")
-      .bind(from)
-      .first<Release>(),
-    c.env.DB.prepare("SELECT * FROM releases WHERE id=?")
-      .bind(to)
-      .first<Release>(),
-  ]);
-  if (!a || !b) return c.json({ error: "Version not found" }, 404);
-  if (a.stream !== b.stream)
-    return c.json({ error: "Compare versions in the same source stream" }, 400);
-  const [ca, cb] = await Promise.all([
-    readCards(c.env.DB, from),
-    readCards(c.env.DB, to),
-  ]);
-  return c.json({ from: a, to: b, changes: compareCards(ca, cb) });
 });
 app.get("/api/decks", async (c) => {
   const q = z

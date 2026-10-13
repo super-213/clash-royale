@@ -15,6 +15,18 @@ def atomic_json(path: Path, value):
     temp.replace(path)
 
 
+def retired_message(endpoint, payload):
+    if endpoint == "release":
+        return payload.get("stream") not in {"cr-data-community", "supercell-api"} or any(
+            card.get("stats") for card in payload.get("cards", [])
+        )
+    if endpoint == "run":
+        return payload.get("source") in {"archive", "feed"}
+    if endpoint == "decks":
+        return any(deck.get("source") == "royaleapi-presets" for deck in payload.get("decks", []))
+    return False
+
+
 class Publisher:
     """Durable outbox. Save before POST; only remove after an acknowledged success."""
 
@@ -42,6 +54,8 @@ class Publisher:
         self.queue.mkdir(parents=True, exist_ok=True)
 
     def submit(self, endpoint, payload):
+        if retired_message(endpoint, payload):
+            raise ValueError("Parameter/history collection has been retired")
         if not self.url:
             return
         import uuid
@@ -52,6 +66,12 @@ class Publisher:
 
     def deliver(self, path):
         message = json.loads(path.read_text())
+        if retired_message(message["endpoint"], message["payload"]):
+            # Keep old evidence, but never resend retired jobs restored from an artifact.
+            retired = self.queue / "retired"
+            retired.mkdir(exist_ok=True)
+            path.replace(retired / path.name)
+            return
         request = urllib.request.Request(
             self.url + "/api/ingest/" + message["endpoint"],
             data=json.dumps(message["payload"], ensure_ascii=False).encode(),

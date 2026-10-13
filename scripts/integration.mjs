@@ -109,8 +109,7 @@ try {
     await new Promise((r) => setTimeout(r, 200));
   }
   assert.ok(ready, "Worker did not start: " + output);
-  const briefFeed = await request("/api/balance-briefs");
-  assert.equal(briefFeed.status, 200);
+  assert.equal((await request("/api/balance-briefs")).status, 404, "Announcement briefs are retired");
   const builderFeed = await request("/api/deck-builder");
   assert.equal(builderFeed.status, 200);
   assert.equal(builderFeed.data.cards.length, 123);
@@ -123,18 +122,6 @@ try {
       .find((card) => card.id === 26000023)
       .forms.includes("hero"),
   );
-  assert.equal(briefFeed.data.editions[0].entries.length, 17);
-  assert.equal(briefFeed.data.editions[0].liveVersionVerified, false);
-  assert.equal(briefFeed.data.editions[0].effectiveAt, null);
-  assert.equal(briefFeed.data.cards.length, 123);
-  assert.equal(
-    briefFeed.data.cards.find((card) => card.id === 28000015).name,
-    "野蛮人滚桶",
-  );
-  assert.equal(
-    briefFeed.data.editions[0].entries.flatMap((entry) => entry.facts).length,
-    21,
-  );
   const card = {
     id: 26000000,
     key: "knight",
@@ -146,10 +133,10 @@ try {
     elixir: 3,
     arena: 0,
     image_url: null,
-    stats: { "characters/Knight": { hitpoints: 100 } },
+    stats: {},
   };
   const baseline = {
-    stream: "test",
+    stream: "cr-data-community",
     revision: "a",
     source_url: "https://example.com/data",
     source_updated_at: "2026-01-01T00:00:00Z",
@@ -167,27 +154,31 @@ try {
     (await request("/api/ingest/release", baseline)).data.id,
     first.data.id,
   );
-  assert.equal((await request("/api/cards?stream=test")).data.total, 1);
-  const dictionary = await request(`/api/cards/dictionary?stream=test&release=${first.data.id}`);
+  const dictionary = await request(`/api/cards/dictionary?stream=cr-data-community&release=${first.data.id}`);
   assert.equal(dictionary.status, 200);
   assert.equal(dictionary.data.cards[0].name, card.name);
   assert.deepEqual(dictionary.data.cards[0].stats, {});
   assert.equal(
-    (await request(`/api/cards/dictionary?stream=other&release=${first.data.id}`)).status, 404,
+    (await request(`/api/cards/dictionary?stream=supercell-api&release=${first.data.id}`)).status, 404,
   );
-  assert.equal((await request("/api/cards?stream=test")).data.items[0].stats["characters/Knight"].hitpoints, 100);
   const second = await request("/api/ingest/release", {
     ...baseline,
     revision: "b",
     source_updated_at: "2026-02-01T00:00:00Z",
-    cards: [{ ...card, stats: { "characters/Knight": { hitpoints: 110 } } }],
+    cards: [{ ...card, name: "骑士新版目录" }],
   });
   assert.equal(second.status, 200);
-  const comparison = await request(
+  assert.equal(second.data.changes, 0, "Catalog refreshes do not record parameter changes");
+  for (const path of [
+    "/api/cards", "/api/cards/26000000", "/api/releases",
     `/api/compare?from=${first.data.id}&to=${second.data.id}`,
-  );
-  assert.equal(comparison.data.changes[0].fields[0].before, 100);
-  assert.equal(comparison.data.changes[0].fields[0].after, 110);
+  ]) assert.equal((await request(path)).status, 404, `Retired endpoint: ${path}`);
+  for (const stream of ["royaleapi-archive", "custom-stats-feed"]) {
+    assert.equal((await request("/api/ingest/release", { ...baseline, stream })).status, 400);
+  }
+  assert.equal((await request("/api/ingest/release", {
+    ...baseline, cards: [{ ...card, stats: { knight: { hitpoints: 100 } } }],
+  })).status, 400, "Reject combat stats even on an active catalog stream");
   assert.equal(
     (await request("/api/ingest/release", { ...baseline, revision: "old" }))
       .status,
@@ -206,7 +197,7 @@ try {
     revision: "b-observed-again",
     source_updated_at: "2026-02-10T00:00:00Z",
     observed_at: "2026-02-11T00:00:00Z",
-    cards: [{ ...card, stats: { "characters/Knight": { hitpoints: 110 } } }],
+    cards: [{ ...card, name: "骑士新版目录" }],
   });
   assert.equal(unchanged.data.id, second.data.id);
   const observedHead = (await request("/api/status")).data.heads[0];
@@ -235,12 +226,6 @@ try {
     ),
   );
   assert.deepEqual(concurrent.map((r) => r.status).sort(), [200, 409]);
-  const history = await request("/api/releases?stream=test");
-  assert.equal(history.data.items.length, 3);
-  const wrongStream = await request(
-    `/api/cards/26000000?stream=other&release=${first.data.id}`,
-  );
-  assert.equal(wrongStream.status, 404);
   const slots = Array.from({ length: 8 }, (_, i) => ({
     id: 26000000 + i,
     variant: "normal",
@@ -288,14 +273,14 @@ try {
   assert.equal((await request("/api/decks?card=29999999")).data.total, 0);
   assert.equal((await request("/api/decks?kind=community")).data.total, 0);
   assert.equal((await request("/api/decks?q=test")).data.total, 1);
-  assert.equal((await request("/api/cards?page=-1")).status, 400);
-  assert.equal((await request("/api/compare?from=no&to=no")).status, 400);
+  assert.equal((await request("/api/decks?page=-1")).status, 400);
+  assert.equal((await request("/api/compare?from=no&to=no")).status, 404);
   assert.equal((await request("/api/does-not-exist")).status, 404);
   const shell = await fetch(`http://127.0.0.1:${port}/`);
   assert.equal(shell.status, 200);
   assert.match(await shell.text(), /皇室档案/);
   console.log(
-    "Integration passed: real Worker + D1; auth, immutable releases, idempotence, concurrency, exact diff, origins, indexed filters, dictionary, status cache/invalidation, stored counts and assets.",
+    "Integration passed: real Worker + D1; auth, display catalogs, retired parameter endpoints/ingestion, idempotence, concurrency, origins, indexed filters, dictionary, status cache/invalidation, stored counts and assets.",
   );
 } finally {
   if (server) {

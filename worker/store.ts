@@ -1,19 +1,9 @@
-import type { Card, DeckInput, Release, ReleaseInput } from "../shared/schema";
+import type { DeckInput, Release, ReleaseInput } from "../shared/schema";
 import {
   canonical,
-  compareCards,
   digest,
   deckIdentity,
 } from "../shared/versioning";
-export async function readCards(db: D1Database, id: string): Promise<Card[]> {
-  const r = await db
-    .prepare(
-      "SELECT doc FROM card_versions WHERE release_id=? ORDER BY card_id",
-    )
-    .bind(id)
-    .all<{ doc: string }>();
-  return r.results.map((x) => JSON.parse(x.doc));
-}
 export async function publishRelease(db: D1Database, input: ReleaseInput) {
   const cards = [...input.cards].sort((a, b) => a.id - b.id);
   const hash = await digest(canonical(cards));
@@ -68,12 +58,10 @@ export async function publishRelease(db: D1Database, input: ReleaseInput) {
     throw new Error(
       "CONFLICT: Source revision is older than or equal to the current head",
     );
-  const previous = head ? await readCards(db, head.id) : [];
-  if (previous.length && cards.length < previous.length * 0.9)
+  if (head && cards.length < head.card_count * 0.9)
     throw new Error(
       "INVALID: More than 10% of cards disappeared; review source coverage",
     );
-  const changes = head ? compareCards(previous, cards) : [];
   const statements = [
     db
       .prepare(
@@ -89,7 +77,7 @@ export async function publishRelease(db: D1Database, input: ReleaseInput) {
         input.source_updated_at,
         input.observed_at,
         cards.length,
-        changes.length,
+        0,
         input.title,
       ),
   ];
@@ -112,14 +100,6 @@ export async function publishRelease(db: D1Database, input: ReleaseInput) {
           canonical(c),
         ),
     );
-  for (const c of changes)
-    statements.push(
-      db
-        .prepare(
-          "INSERT INTO changes (release_id,card_id,kind,fields) VALUES (?,?,?,?)",
-        )
-        .bind(id, c.card_id, c.kind, canonical(c.fields)),
-    );
   statements.push(
     db
       .prepare(
@@ -129,7 +109,7 @@ export async function publishRelease(db: D1Database, input: ReleaseInput) {
   );
   // D1 batch is transactional. Unique parent index rejects concurrent siblings, rolling everything back.
   await db.batch(statements);
-  return { id, unchanged: false, changes: changes.length };
+  return { id, unchanged: false, changes: 0 };
 }
 export async function publishDecks(db: D1Database, decks: DeckInput[]) {
   const statements = [];

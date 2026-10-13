@@ -23,26 +23,16 @@ async function post(path, payload) {
   if (!r.ok) throw new Error(`${path}: ${r.status} ${await r.text()}`);
   return r.json();
 }
-const paths = await readdir("data/releases");
-const releases = await Promise.all(
-  paths
-    .filter((p) => p.endsWith(".json"))
-    .map((p) => readFile("data/releases/" + p, "utf8").then(JSON.parse)),
-);
-releases.sort((a, b) => a.source_updated_at.localeCompare(b.source_updated_at));
-for (const release of releases)
-  console.log(
-    "Release",
-    release.source_updated_at,
-    await post("release", release),
-  );
-let additionalReleases = 0;
+let catalogs = 0;
 let additionalDecks = 0;
-for (const file of ["community.json", "official.json", "feed.json"]) {
+for (const file of ["community.json", "official.json"]) {
   const raw = await readFile("data/" + file, "utf8").catch(() => null);
   if (raw) {
-    await post("release", JSON.parse(raw));
-    additionalReleases++;
+    const catalog = JSON.parse(raw);
+    if (catalog.cards.some((card) => Object.keys(card.stats ?? {}).length))
+      throw new Error("Seed only accepts card identity/display catalogs");
+    await post("release", catalog);
+    catalogs++;
   }
 }
 for (const file of ["community-decks.json", "player-decks.json"]) {
@@ -58,8 +48,10 @@ const { decks } = JSON.parse(await readFile("data/decks.json", "utf8"));
 for (let i = 0; i < decks.length; i += 25)
   await post("decks", { decks: decks.slice(i, i + 25) });
 const runs = await readdir("data/runs").catch(() => []);
-for (const p of runs.filter((p) => p.endsWith(".json")))
-  await post("run", JSON.parse(await readFile("data/runs/" + p, "utf8")));
+for (const p of runs.filter((p) => p.endsWith(".json"))) {
+  const run = JSON.parse(await readFile("data/runs/" + p, "utf8"));
+  if (["community", "official"].includes(run.source)) await post("run", run);
+}
 console.log(
-  `Seeded ${releases.length + additionalReleases} snapshots and ${decks.length + additionalDecks} deck observations. Archive parameters are historical; community samples do not contain full combat stats.`,
+  `Seeded ${catalogs} display catalogs and ${decks.length + additionalDecks} deck observations. Combat parameters and history ingestion are disabled.`,
 );

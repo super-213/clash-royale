@@ -13,8 +13,6 @@ import {
 } from "../shared/personal-decks";
 import { builderCards } from "../worker/builder-feed";
 import { layoutDeck, cardForForm } from "../shared/deck-layout";
-import { matchDeck } from "../shared/brief";
-import { balanceEditions } from "../worker/balance-feed";
 
 const cards = Object.fromEntries(builderCards.map((card) => [card.id, card]));
 const draft: DraftSlot[] = [
@@ -97,7 +95,7 @@ describe("personal deck building", () => {
     ).not.toBeNull();
     expect(validateDraft(draft, {})).toMatch(/暂不可用/);
   });
-  it("freely switches every dual-form wild card while preserving deck identity, portraits and exact brief matching", () => {
+  it("freely switches every dual-form wild card while preserving deck identity, portraits and selected forms", () => {
     const dualCards = builderCards.filter(
       (card) => card.forms.includes("evolution") && card.forms.includes("hero"),
     );
@@ -115,15 +113,6 @@ describe("personal deck building", () => {
       let deck = createPersonalDeck("混合槽", slots, cards);
       const identity = deck.id;
       const ids = slots.map((slot) => slot!.id);
-      const edition = {
-        ...balanceEditions[0],
-        entries: ["evolution", "hero"].map((variant) => ({
-          ...balanceEditions[0].entries[0],
-          key: `wild-${variant}`,
-          cardId: card.id,
-          variant: variant as "evolution" | "hero",
-        })),
-      };
       for (const variant of ["hero", "evolution", "normal", "hero"] as const) {
         slots = putCard(slots, 2, card, variant);
         deck = parsePersonalDecks(
@@ -140,9 +129,7 @@ describe("personal deck building", () => {
         ).toBe(
           variant === "normal" ? card.image_url : card.form_images?.[variant],
         );
-        expect(
-          matchDeck(deck.slots, edition).map((match) => match.entry.variant),
-        ).toEqual(variant === "normal" ? [] : [variant]);
+
       }
     }
   });
@@ -182,12 +169,9 @@ describe("personal deck building", () => {
     expect(renamed.id).toBe(deck.id);
     expect(renamed.created_at).toBe(deck.created_at);
   });
-  it("matches the selected special form immediately, without a public favorite", () => {
+  it("saves the selected special form locally without a public favorite", () => {
     const deck = createPersonalDeck("测试卡组", draft, cards);
-    const cannon = matchDeck(deck.slots, balanceEditions[0]).find(
-      (match) => match.entry.key === "cannon-ev1",
-    );
-    expect(cannon?.certainty).toBe("direct");
+    expect(deck.slots[2]).toEqual({ id: 27000000, variant: "evolution" });
     expect(deck.id).toMatch(/^local:/);
     expect(deck.origins).toEqual([]);
   });

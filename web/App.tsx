@@ -1,26 +1,21 @@
 import { useEffect, useState } from "react";
 import {
-  BookOpen,
   Layers,
-  GitBranch,
   Database,
   ArrowUpRight,
   Check,
   Crown,
-  RefreshCw,
   Bookmark,
 } from "lucide-react";
 import type { Card, Deck } from "../shared/schema";
 import { useApi } from "./api";
 import { loadCardDictionary } from "./card-dictionary";
-import { names, date, stale, streamName } from "./format";
+import { names } from "./format";
 import type { View, Status } from "./types";
 import { Notice, Modal } from "./components/Common";
 import { Decks, DeckPanel } from "./components/Decks";
-import { Cards, CardDialog } from "./components/Cards";
-import { Balance } from "./components/Balance";
 import { Sources } from "./components/Sources";
-import { Brief } from "./components/Brief";
+import { MyDecks } from "./components/MyDecks";
 import { DeckEditor } from "./components/DeckEditor";
 import {
   PERSONAL_KEY,
@@ -55,14 +50,13 @@ function App() {
   );
   const initial = new URLSearchParams(location.search);
   const [view, setView] = useState<View>(
-    (["brief", "decks", "cards", "balance", "sources"].includes(
+    (["brief", "decks", "sources"].includes(
       initial.get("view") ?? "",
     )
       ? initial.get("view")
       : "decks") as View,
   );
-  const [stream, setStream] = useState(initial.get("stream") ?? ""),
-    [q, setQ] = useState(initial.get("q") ?? ""),
+  const [q, setQ] = useState(initial.get("q") ?? ""),
     [page, setPage] = useState(1),
     [filter, setFilter] = useState(""),
     [onlySaved, setOnlySaved] = useState(false);
@@ -82,18 +76,15 @@ function App() {
       return [];
     }
   });
-  const [selectedCard, setSelectedCard] = useState<Card | null>(null),
-    [selectedDeck, setSelectedDeck] = useState<Deck | null>(null),
+  const [selectedDeck, setSelectedDeck] = useState<Deck | null>(null),
     [toast, setToast] = useState("");
   const status = useApi<Status>("/api/status");
   const formCatalog = useApi<{ cards: BuilderCard[] }>("/api/deck-builder");
   const activeStream =
-    stream ||
     (status.data?.heads.find((x) => x.stream === "supercell-api")?.stream ??
       status.data?.heads.find((x) => x.stream === "cr-data-community")
         ?.stream ??
-      status.data?.heads[0]?.stream ??
-      "royaleapi-archive");
+      "cr-data-community");
   const head = status.data?.heads.find((x) => x.stream === activeStream);
   const [dictionary, setDictionary] = useState<Record<number, Card>>({});
   const displayCards: Record<number, DisplayCard> = Object.fromEntries(
@@ -120,10 +111,9 @@ function App() {
   useEffect(() => {
     const params = new URLSearchParams();
     params.set("view", view);
-    params.set("stream", activeStream);
     if (q) params.set("q", q);
     history.replaceState(null, "", "?" + params);
-  }, [view, activeStream, q]);
+  }, [view, q]);
   useEffect(() => {
     if (!toast) return;
     const timer = setTimeout(() => setToast(""), 2600);
@@ -217,8 +207,6 @@ function App() {
             [
               ["decks", Layers],
               ["brief", Bookmark],
-              ["cards", BookOpen],
-              ["balance", GitBranch],
               ["sources", Database],
             ] as const
           ).map(([id, Icon]) => (
@@ -250,70 +238,10 @@ function App() {
         <main>
           <div className="page-heading">
             <h1>{names[view]}</h1>
-            {(view === "cards" || view === "balance") && (
-              <div className="top-actions">
-                <select
-                  aria-label="选择数据来源"
-                  value={activeStream}
-                  onChange={(e) => {
-                    setStream(e.target.value);
-                    setPage(1);
-                    setFilter("");
-                  }}
-                >
-                  {status.data?.heads.length ? (
-                    status.data.heads.map((r) => (
-                      <option key={r.stream} value={r.stream}>
-                        {streamName[r.stream] ?? r.stream}
-                      </option>
-                    ))
-                  ) : (
-                    <option value="royaleapi-archive">等待数据同步</option>
-                  )}
-                </select>
-                <button
-                  className="icon-button"
-                  aria-label="刷新来源状态"
-                  onClick={status.retry}
-                >
-                  <RefreshCw size={16} />
-                </button>
-              </div>
-            )}
           </div>
           {status.error && <Notice error={status.error} retry={status.retry} />}
-          {(view === "cards" || view === "balance") && head && (
-            <div className={"source-strip " + (stale(head) ? "stale" : "")}>
-              <span className="strip-icon">
-                <Database size={17} />
-              </span>
-              <span>
-                <span className="strip-description">
-                  {stale(head)
-                    ? "历史参数"
-                    : head.stream === "supercell-api"
-                      ? "官方目录不提供战斗参数"
-                      : head.stream === "cr-data-community"
-                        ? "社区样本 · 无战斗参数"
-                        : "来源参数快照"}
-                </span>
-              </span>
-              <span className="strip-date">
-                {head.stream === "supercell-api" ? "观测日期" : "来源更新"}{" "}
-                {date(head.latest_source_updated_at ?? head.source_updated_at)}
-              </span>
-              <button onClick={() => navigate("sources")}>
-                来源详情 <ArrowUpRight size={15} />
-              </button>
-            </div>
-          )}
-          {view !== "brief" && !status.loading && !head && (
-            <div className="notice">
-              暂无可用数据，请稍后刷新。
-            </div>
-          )}
           {view === "brief" && (
-            <Brief
+            <MyDecks
               personal={personalState.decks}
               personalWarning={personalState.warning}
               editPersonal={(deck) => setEditor({ deck })}
@@ -359,7 +287,7 @@ function App() {
               }}
               saved={saved}
               save={save}
-              showBrief={() => navigate("brief")}
+              showMyDecks={() => navigate("brief")}
               buildFrom={(source) => {
                 if (personalState.decks.length >= MAX_PERSONAL_DECKS)
                   notify(
@@ -373,30 +301,6 @@ function App() {
               total={status.data?.decks ?? 0}
             />
           )}
-          {(view === "cards" || view === "balance") && status.loading && (
-            <div className="loading-text">正在读取数据来源…</div>
-          )}
-          {view === "cards" && status.data && (
-            <Cards
-              q={q}
-              setQ={(v) => {
-                setQ(v);
-                setPage(1);
-              }}
-              page={page}
-              setPage={setPage}
-              filter={filter}
-              setFilter={(v) => {
-                setFilter(v);
-                setPage(1);
-              }}
-              stream={activeStream}
-              open={setSelectedCard}
-            />
-          )}
-          {view === "balance" && status.data && (
-            <Balance stream={activeStream} notify={notify} />
-          )}
           {view === "sources" && (
             <Sources status={status.data} loading={status.loading} />
           )}
@@ -408,14 +312,6 @@ function App() {
           </footer>
         </main>
       </div>
-      {selectedCard && (
-        <CardDialog
-          card={selectedCard}
-          release={head}
-          stream={activeStream}
-          close={() => setSelectedCard(null)}
-        />
-      )}
       {selectedDeck && (
         <Modal title="卡组详情" close={() => setSelectedDeck(null)}>
           <DeckPanel

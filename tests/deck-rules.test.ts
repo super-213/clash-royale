@@ -12,7 +12,6 @@ import {
 } from "../shared/personal-decks";
 import { initialEditorState, reduceDeckEditor } from "../shared/deck-editor";
 import { slotNames } from "../shared/deck-layout";
-import { balanceVariant } from "../shared/brief";
 
 const cards = Object.fromEntries(builderCards.map((card) => [card.id, card]));
 const champions = builderCards.filter((card) => card.rarity === "Champion");
@@ -37,11 +36,6 @@ describe("official standard deck rules, checked 2026-10-13", () => {
       hero: "精英栏位",
       wild: "魔法栏位",
       regular: "普通栏位",
-    });
-    expect(balanceVariant).toEqual({
-      normal: "普通",
-      evolution: "觉醒",
-      hero: "精英",
     });
     expect(cards[26000093].name).toBe("小王子");
     expect(cards[26000103].name).toBe("刺客头领");

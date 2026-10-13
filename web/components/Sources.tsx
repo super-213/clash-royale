@@ -13,7 +13,7 @@ export function Sources({
       <div className="source-section">
         <h2>已接入来源</h2>
         <p className="muted">
-          参数以来源更新日期为准，采集时间不代表游戏版本。
+          采集卡组组成及展示所需的卡牌基础资料。
         </p>
         {loading ? (
           <p>读取中…</p>
@@ -22,7 +22,7 @@ export function Sources({
             <article className="source-row" key={r.id}>
               <div>
                 <span className={"source-state " + (stale(r) ? "old" : "")}>
-                  {stale(r) ? "历史归档" : "已接入"}
+                  {stale(r) ? "较久未更新" : "已接入"}
                 </span>
                 <h3>{streamName[r.stream] ?? r.stream}</h3>
                 <a href={r.source_url} target="_blank" rel="noreferrer">
@@ -49,7 +49,7 @@ export function Sources({
                   <dd>{date(r.last_observed_at ?? r.observed_at)}</dd>
                 </div>
                 <div>
-                  <dt>当前快照</dt>
+                  <dt>目录版本</dt>
                   <dd>
                     <code>{r.id.slice(0, 10)}</code>
                   </dd>
@@ -87,7 +87,7 @@ export function Sources({
       <div className="source-section scope">
         <h2>收录范围</h2>
         <p>
-          历史归档提供旧版参数与预设卡组，不代表当前环境。官方目录不提供生命值、伤害等完整战斗参数。
+          保留仓库已有的历史预设卡组供浏览，不代表当前热门卡组。官方来源用于卡牌基础资料及指定玩家的当前卡组。
         </p>
         <p>
           CR Data 提供采样对局的卡牌与卡组，未区分全部特殊形态，不代表热门排名。当前仅支持国际服。

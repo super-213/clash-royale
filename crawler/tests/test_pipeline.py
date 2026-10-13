@@ -2,7 +2,6 @@ import json
 from pathlib import Path
 import pytest
 from arena.adapters import (
-    gameplay_components,
     preset_decks,
     official_cards,
     official_deck,
@@ -11,35 +10,44 @@ from arena.adapters import (
 from arena.publish import Publisher, atomic_json
 
 
-def test_nested_components_and_no_cosmetic_changes():
-    raw = {
-        "troop": [
-            {
-                "name": "Wizard",
-                "summon_character": "Wizard",
-                "mana_cost": 5,
-                "icon_file": "wizard",
-            }
-        ],
-        "characters": [
-            {"name": "Wizard", "projectile": "Bolt", "hitpoints": 100, "mesh": "new"}
-        ],
-        "projectile": [{"name": "Bolt", "damage": 20, "damage_per_level": [20, 22]}],
-    }
-    stats = gameplay_components({"sc_key": "Wizard"}, raw)
-    assert stats["projectile/Bolt"]["damage"] == 20
-    assert "mesh" not in stats["characters/Wizard"]
-    assert "icon_file" not in stats["troop/Wizard"]
+@pytest.mark.parametrize("source", ["archive", "feed"])
+def test_retired_sources_are_rejected_before_collection(source):
+    import subprocess
+    import sys
+
+    result = subprocess.run(
+        [sys.executable, "-m", "arena", "--source", source],
+        cwd=Path(__file__).resolve().parents[1],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 2
+    assert "invalid choice" in result.stderr
 
 
-def test_cycles_do_not_duplicate_components():
-    raw = {
-        "characters": [
-            {"name": "A", "spawn_character": "B"},
-            {"name": "B", "spawn_character": "A"},
-        ]
-    }
-    assert len(gameplay_components({"sc_key": "A"}, raw)) == 2
+@pytest.mark.parametrize("payload", [
+    {"stream": "royaleapi-archive", "cards": []},
+    {"stream": "cr-data-community", "cards": [{"stats": {"knight": {"hitpoints": 100}}}]},
+])
+def test_retired_outbox_is_preserved_without_network(tmp_path, monkeypatch, payload):
+    import urllib.request
+
+    monkeypatch.setenv("ARENA_API_URL", "http://127.0.0.1:8787")
+    monkeypatch.setenv("INGEST_TOKEN", "test")
+    publisher = Publisher(tmp_path)
+    message = {"endpoint": "release", "payload": payload}
+    pending = publisher.queue / "old-release.json"
+    atomic_json(pending, message)
+
+    def unexpected_request(*args, **kwargs):
+        pytest.fail("Retired parameter jobs must never access the network")
+
+    monkeypatch.setattr(urllib.request, "build_opener", unexpected_request)
+    publisher.replay()
+    assert not pending.exists()
+    assert json.loads((publisher.queue / "retired" / pending.name).read_text()) == message
+    with pytest.raises(ValueError, match="retired"):
+        publisher.submit("release", payload)
 
 
 def test_incomplete_unknown_and_duplicate_presets_are_excluded():

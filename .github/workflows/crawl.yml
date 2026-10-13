@@ -6,23 +6,20 @@ on:
     inputs:
       source:
         type: choice
-        options: [community, archive, official, feed]
+        options: [community, official]
         default: community
-      history:
-        description: "Archive revisions for first bootstrap only (1..30)"
-        default: "1"
 permissions:
   contents: read
   actions: read
 jobs:
   public:
-    if: github.event_name == 'schedule' || inputs.source == 'community' || inputs.source == 'archive' || inputs.source == 'feed'
+    if: github.event_name == 'schedule' || inputs.source == 'community'
     environment: production
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        source: ${{ fromJSON(github.event_name == 'schedule' && '["community","archive"]' || format('["{0}"]', inputs.source)) }}
+        source: [community]
     concurrency:
       group: crawl-${{ matrix.source }}
       cancel-in-progress: false
@@ -31,8 +28,6 @@ jobs:
       INGEST_TOKEN: ${{ secrets.INGEST_TOKEN }}
       GITHUB_TOKEN: ${{ github.token }}
       CRAWL_SOURCE: ${{ matrix.source }}
-      CRAWL_HISTORY: ${{ inputs.history || '1' }}
-      STATS_FEED_URL: ${{ vars.STATS_FEED_URL }}
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
@@ -49,7 +44,7 @@ jobs:
         run: |
           test -n "$ARENA_API_URL"
           test -n "$INGEST_TOKEN"
-          uv run --directory crawler --frozen python -m arena --source "$CRAWL_SOURCE" --history "$CRAWL_HISTORY"
+          uv run --directory crawler --frozen python -m arena --source "$CRAWL_SOURCE"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

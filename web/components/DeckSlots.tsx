@@ -12,13 +12,11 @@ export function DeckSlots({
   slots,
   cards,
   context = "library",
-  changed = [],
   preserveOrder = false,
 }: {
   slots: Slot[];
   cards: Record<number, DeckCard>;
   context?: "library" | "detail" | "brief";
-  changed?: number[];
   preserveOrder?: boolean;
 }) {
   const layout = layoutDeck(slots, cards, { preserveOrder });
@@ -36,12 +34,12 @@ export function DeckSlots({
           return (
             <div
               key={cell.slot.id}
-              className={`deck-slot deck-slot--${displayKind}${cell.active ? " is-active" : ""}${cell.conflict ? " is-conflict" : ""}${changed.includes(cell.slot.id) ? " has-change" : ""}`}
+              className={`deck-slot deck-slot--${displayKind}${cell.active ? " is-active" : ""}${cell.conflict ? " is-conflict" : ""}`}
               data-position={cell.position + 1}
               data-card-id={cell.slot.id}
               data-slot-kind={displayKind}
               data-variant={cell.slot.variant}
-              aria-label={`${card?.name ?? cell.slot.id} · ${cell.formLabel}${changed.includes(cell.slot.id) ? " · 涉及调整" : ""}`}
+              aria-label={`${card?.name ?? cell.slot.id} · ${cell.formLabel}`}
               title={
                 showSlot
                   ? `第 ${cell.position + 1} 槽 · ${slotNames[cell.kind]}：${slotHelp[cell.kind]} 当前记录：${cell.formLabel}${cell.conflict ? "，与当前槽位规则冲突" : ""}。`

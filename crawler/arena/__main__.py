@@ -8,8 +8,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from .http import HTTP
 from .adapters import (
-    archive_cards,
-    preset_decks,
     official_cards,
     official_deck,
     community_snapshot,
@@ -17,66 +15,12 @@ from .adapters import (
 from .publish import Publisher, atomic_json
 
 ROOT = Path(__file__).resolve().parents[2] / "data"
-REPO = "https://api.github.com/repos/RoyaleAPI/cr-api-data"
-RAW = "https://raw.githubusercontent.com/RoyaleAPI/cr-api-data"
 
 
 def now():
     return (
         datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
     )
-
-
-def archive(http, publisher, history):
-    commits = http.get(
-        REPO + "/commits?path=docs/json/cards_stats.json&per_page=" + str(history),
-        os.getenv("GITHUB_TOKEN"),
-    )
-    if not isinstance(commits, list) or not commits:
-        raise ValueError("No source revisions")
-    count = 0
-    for commit in reversed(commits):
-        sha, date = commit["sha"], commit["commit"]["committer"]["date"]
-        base = RAW + "/" + sha + "/docs/json/"
-        inputs = {
-            name: http.get(base + name + ".json")
-            for name in ["cards", "cards_i18n", "cards_stats", "predefined_decks"]
-        }
-        cards = archive_cards(
-            inputs["cards"], inputs["cards_i18n"], inputs["cards_stats"]
-        )
-        observed = now()
-        release = {
-            "stream": "royaleapi-archive",
-            "revision": sha,
-            "source_url": "https://github.com/RoyaleAPI/cr-api-data/tree/" + sha,
-            "source_updated_at": date,
-            "observed_at": observed,
-            "title": "历史参数 · " + date[:10],
-            "cards": cards,
-        }
-        atomic_json(ROOT / "raw" / sha / "source.json", inputs)
-        atomic_json(ROOT / "releases" / (sha + ".json"), release)
-        publisher.submit("release", release)
-        if commit == commits[0]:
-            decks, skipped = preset_decks(
-                inputs["predefined_decks"],
-                cards,
-                "https://github.com/RoyaleAPI/cr-api-data/blob/"
-                + sha
-                + "/docs/json/predefined_decks.json",
-                observed,
-            )
-            atomic_json(
-                ROOT / "decks.json", {"decks": decks, "skipped_presets": skipped}
-            )
-            for i in range(0, len(decks), 25):
-                publisher.submit("decks", {"decks": decks[i : i + 25]})
-            count = len(cards) + len(decks)
-        print(
-            f"archive {sha[:8]}: {len(cards)} cards; source updated {date}", flush=True
-        )
-    return count
 
 
 def community(http, publisher):
@@ -161,49 +105,17 @@ def official(http, publisher):
     return len(cards) + len(decks)
 
 
-def feed(http, publisher):
-    url = os.getenv("STATS_FEED_URL")
-    if not url:
-        raise ValueError("STATS_FEED_URL is required")
-    release = http.get(url)
-    if release.get("stream") in {
-        "supercell-api",
-        "royaleapi-archive",
-        "cr-data-community",
-    }:
-        raise ValueError("A custom feed needs its own stream")
-    release["observed_at"] = now()
-    if not release.get("cards"):
-        raise ValueError("Empty normalized feed")
-    atomic_json(ROOT / "feed.json", release)
-    publisher.submit("release", release)
-    return len(release["cards"])
-
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--source",
-        choices=["archive", "community", "official", "feed"],
-        default="archive",
-    )
-    parser.add_argument(
-        "--history",
-        type=int,
-        default=1,
-        help="Archive revisions, oldest first; 1 for routine sync",
+        choices=["community", "official"],
+        default="community",
     )
     args = parser.parse_args()
-    if not 1 <= args.history <= 30:
-        parser.error("--history must be 1..30")
     started = now()
     publisher = Publisher(ROOT)
-    extra = (
-        [urllib.parse.urlparse(os.getenv("STATS_FEED_URL", "")).hostname]
-        if os.getenv("STATS_FEED_URL")
-        else []
-    )
-    http = HTTP(ROOT / "cache", extra)
+    http = HTTP(ROOT / "cache")
     run = {
         "id": str(uuid.uuid4()),
         "source": args.source,
@@ -215,19 +127,13 @@ def main():
     }
     try:
         publisher.replay()
-        if args.source == "archive":
-            run["count"] = archive(http, publisher, args.history)
-        elif args.source == "community":
+        if args.source == "community":
             run["count"] = community(http, publisher)
-        elif args.source == "official":
-            run["count"] = official(http, publisher)
         else:
-            run["count"] = feed(http, publisher)
-        if args.source == "archive":
-            run["message"] = "历史归档来源；更新停留于 2023 年，不能代表当前平衡参数。"
+            run["count"] = official(http, publisher)
         if args.source == "community":
             run["message"] = (
-                "社区采样的卡牌目录及卡组组成；形态聚合，非全量卡牌或完整战斗参数。"
+                "社区采样的卡牌基础资料及卡组组成；形态聚合，不代表热门排名。"
             )
     except Exception as error:
         run["status"] = (

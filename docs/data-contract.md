@@ -2,41 +2,13 @@
 
 服务端最终合同在 `shared/schema.ts`。所有写接口需要 `Authorization: Bearer INGEST_TOKEN`；最多 6 MB。成功 200，输入不合格 400/422，版本乱序或并发冲突 409，超限 413，未配置密钥 503。
 
-## 参数快照
+## 卡牌展示目录
 
-`POST /api/ingest/release`，同时也是 `STATS_FEED_URL` 应返回的 JSON 结构：
+`POST /api/ingest/release` 只接受 `cr-data-community` 和 `supercell-api` 两个来源的基础目录。保留原有 release/head 存储以支持幂等、来源时间和卡组展示，不再计算或写入参数差异。
 
-```json
-{
-  "stream": "your-maintained-parameters",
-  "revision": "upstream-commit-or-build-id",
-  "source_url": "https://example.com/actual-source",
-  "source_updated_at": "2026-10-13T00:00:00Z",
-  "observed_at": "2026-10-13T00:10:00Z",
-  "title": "2026-10 参数快照",
-  "cards": [
-    {
-      "id": 26000000,
-      "key": "knight",
-      "name": "骑士",
-      "name_en": "Knight",
-      "description": "来源描述",
-      "type": "Troop",
-      "rarity": "Common",
-      "elixir": 3,
-      "arena": null,
-      "image_url": null,
-      "stats": { "characters/Knight": { "hitpoints": 100, "hit_speed": 1200 } }
-    }
-  ]
-}
-```
+目录字段：`stream`、`revision`、`source_url`、`source_updated_at`、`observed_at`、`title`、`cards`。每张卡包含官方数值 `id`、`key`、`name`、`name_en`、`description`、`type`、`rarity`、`elixir`、`arena`、`image_url` 和兼容字段 `stats: {}`。未知 arena 为 null；图片需使用共享校验允许的 HTTPS 域名。非空 stats 和 archive/custom feed 等来源均返回 400，不再接受战斗参数。
 
-示例数值仅用于说明合同，**不是实际骑士参数**，不能用来生产 seed。来源流只能包含同一口径，不能混入其他来源的历史参数。`source_updated_at` 必须表示已知上游版本时间；上游只提供观测时间时，应明确标为观测。未知 arena 为 null，不填 0 冒充训练营。
-
-`stats` 以组件分组，保存可验证的来源值，按等级数组保留原索引。缺失数值不推算。来源数据类型/单位变化需要新流或迁移计划。image_url 只允许预设素材域名，需新增域名时修改共享校验并核对使用条件。
-
-服务器自己计算 commit ID、parent、diff 和内容 hash；不信任采集器传来的分类和百分比。同内容更新不制造新提交。小于既有覆盖 90% 的新快照需要人工复核。
+完整合同见 `shared/schema.ts`。同内容更新只更新观测时间，不制造重复目录版本；乱序或并发更新返回 409，覆盖下降超过 10% 返回 422。
 
 ## 卡组
 
@@ -59,7 +31,7 @@ ID 按区服与排序后的卡牌/形态计算；出处单独 upsert。基础链
 
 这是一层显示编排，不是采集出的原始位置。已知 evolution 优先放入第 1 槽，已知 hero 或 normal + Champion 优先放入第 2 槽，剩余已知特殊卡放入第 3 槽；其余按来源相对顺序填充。超过容量的特殊形态保留并显示冲突，不删卡或篡改形态。normal 与 unknown 不因为放进前三槽就变成觉醒或 Hero。
 
-列表、详情和简报复用 `DeckSlots` 组件；基础导入链接采用相同显示顺序。源 `slots`、数据库记录、形态、收藏去重 ID 均不修改。现有数组不承诺真实槽序；将来接入精确位置证据时，应单独建模该证据，不能把当前推导位置冒充原始位置。未读取到 Champion 稀有度时不猜测英雄牌身份。
+列表、详情和我的卡组复用 `DeckSlots` 组件；基础导入链接采用相同显示顺序。源 `slots`、数据库记录、形态、收藏去重 ID 均不修改。现有数组不承诺真实槽序；将来接入精确位置证据时，应单独建模该证据，不能把当前推导位置冒充原始位置。未读取到 Champion 稀有度时不猜测英雄牌身份。
 
 ## 运行记录
 
@@ -68,14 +40,13 @@ ID 按区服与排序后的卡牌/形态计算；出处单独 upsert。基础链
 ## 读接口
 
 - `/api/status`：来源 head、唯一卡组数、各来源最近运行。
-- `/api/cards?stream=...&q=...&type=...&rarity=...&elixir=...&page=1&limit=24`：图鉴。
-- `/api/cards?stream=...&release=...`：不可变的指定快照。
-- `/api/cards/{id}?stream=...`：卡牌与最近变化历史。
-- `/api/releases?stream=...&page=1`：每页 30 个提交。
-- `/api/compare?from=...&to=...`：同来源任意双版本差异。
+- `/api/cards/dictionary?stream=...&release=...`：卡组展示所需的基本资料，仅支持两个有效目录来源，stats 永远为空。
+- `/api/deck-builder`：配卡所需的基础目录及形态、素材能力。
 - `/api/decks?q=...&card=...&kind=...&page=1&limit=12`：分页卡组。
 - `/api/decks?ids=hash1,hash2`：收藏批量，最多 60 个 ID。
 - `/api/health`：D1 连通性。
+
+公告简报 `/api/balance-briefs`、卡牌图鉴 `/api/cards`、卡牌参数详情 `/api/cards/{id}`、历史版本 `/api/releases`、差异 `/api/compare` 均已移除，返回 404。
 
 读接口无用户登录；收藏保存在浏览器，不提供跨设备同步。
 
