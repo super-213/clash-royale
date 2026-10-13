@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { ArrowUpRight, ChevronDown, Heart, RefreshCw, Plus, Pencil, Trash2 } from "lucide-react";
+import { ArrowUpRight, ChevronDown, Heart, RefreshCw, Plus, Pencil, Trash2, Copy } from "lucide-react";
+import { fullDeckUrl } from "../../shared/deck-share";
 import type { Deck } from "../../shared/schema";
 import type { DeckCard } from "../../shared/deck-layout";
 import { api } from "../api";
 import { Notice } from "./Common";
 import { DeckSlots } from "./DeckSlots";
+import { TowerTroop } from "./TowerTroop";
 import {
   deckCardDictionary,
   isPersonalDeck,
@@ -72,6 +74,7 @@ export function MyDecks({
   save,
   open,
   browse,
+  copy,
 }: {
   personal: PersonalDeck[];
   personalWarning: string;
@@ -84,6 +87,7 @@ export function MyDecks({
   save: (id: string) => void;
   open: (deck: Deck) => void;
   browse: (onlySaved?: boolean) => void;
+  copy: (text: string) => void;
 }) {
   const decks = useSavedDecks(saved);
   const items = [
@@ -168,6 +172,7 @@ export function MyDecks({
                   </div>
                   <DeckSlots slots={deck.slots} cards={deckCardDictionary(deck, dictionary)}
                     preserveOrder={deck.slot_order === "explicit"} context="brief" />
+                  {isPersonalDeck(deck) && <TowerTroop value={deck.tower_troop} />}
                 </summary>
                 <div className="brief-deck-body">
                   <div className="brief-deck-actions">
@@ -176,6 +181,7 @@ export function MyDecks({
                     </button>
                     {isPersonalDeck(deck) ? (
                       <>
+                        <button onClick={() => copy(fullDeckUrl(deck, location.href))}><Copy size={15} /> 复制完整配置链接</button>
                         <button onClick={() => editPersonal(deck)}><Pencil size={15} /> 编辑卡组</button>
                         <button onClick={() => deletePersonal(deck.id)}><Trash2 size={15} /> 删除卡组</button>
                       </>

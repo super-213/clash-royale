@@ -11,15 +11,17 @@ import {
   type CardForm,
   type DraftSlot,
 } from "./personal-decks";
+import { DEFAULT_TOWER_TROOP, towerTroopSchema, towerTroopInfo, type TowerTroopKey } from "./tower-troops";
 
 export type EditorState = {
   slots: DraftSlot[];
+  towerTroop: TowerTroopKey;
   target: number;
   slotChosen: boolean;
   candidateId: number | null;
   swapping: boolean;
   message: string;
-  undo: { slots: DraftSlot[]; target: number } | null;
+  undo: { slots: DraftSlot[]; target: number; towerTroop: TowerTroopKey } | null;
 };
 export type EditorAction =
   | { type: "choose"; id: number }
@@ -28,11 +30,16 @@ export type EditorAction =
   | { type: "move"; from: number; to: number }
   | { type: "form"; position: number; value: CardForm }
   | { type: "seed"; slots: DraftSlot[] }
+  | { type: "tower"; value: TowerTroopKey }
   | { type: "remove" | "swap-mode" | "undo" | "cancel-choice" };
 
-export function initialEditorState(slots: DraftSlot[]): EditorState {
+export function initialEditorState(
+  slots: DraftSlot[],
+  towerTroop: TowerTroopKey = DEFAULT_TOWER_TROOP,
+): EditorState {
   return {
     slots,
+    towerTroop,
     target: Math.max(
       0,
       slots.findIndex((slot) => !slot),
@@ -45,7 +52,7 @@ export function initialEditorState(slots: DraftSlot[]): EditorState {
   };
 }
 
-// All card mutations share one undo snapshot; selecting/searching never consumes it.
+// Cards and the independent tower selection share one undo snapshot.
 export function reduceDeckEditor(
   state: EditorState,
   action: EditorAction,
@@ -56,7 +63,7 @@ export function reduceDeckEditor(
     patch: Partial<EditorState> = {},
   ): EditorState => {
     if (
-      slots.every(
+      (patch.towerTroop ?? state.towerTroop) === state.towerTroop && slots.every(
         (slot, i) =>
           slot?.id === state.slots[i]?.id &&
           slot?.variant === state.slots[i]?.variant,
@@ -70,7 +77,7 @@ export function reduceDeckEditor(
       slotChosen: false,
       swapping: false,
       message: "",
-      undo: { slots: state.slots, target: state.target },
+      undo: { slots: state.slots, target: state.target, towerTroop: state.towerTroop },
       ...patch,
     };
   };
@@ -103,7 +110,7 @@ export function reduceDeckEditor(
       case "seed": {
         const normalized = normalizeEditorSlots(action.slots, cards);
         return {
-          ...initialEditorState(normalized),
+          ...initialEditorState(normalized, state.towerTroop),
           message: normalized.some(
             (slot, i) =>
               slot?.id !== action.slots[i]?.id ||
@@ -112,6 +119,15 @@ export function reduceDeckEditor(
             ? "已按当前栏位整理卡牌形态。"
             : "",
         };
+      }
+      case "tower": {
+        const towerTroop = towerTroopSchema.parse(action.value);
+        return commit(state.slots, {
+          towerTroop,
+          candidateId: state.candidateId,
+          slotChosen: state.slotChosen,
+          message: `塔兵已设为${towerTroopInfo(towerTroop).name}。`,
+        });
       }
       case "choose": {
         const used = state.slots.findIndex((slot) => slot?.id === action.id);
@@ -199,7 +215,7 @@ export function reduceDeckEditor(
       case "undo":
         return state.undo
           ? {
-              ...initialEditorState(state.undo.slots),
+              ...initialEditorState(state.undo.slots, state.undo.towerTroop),
               target: state.undo.target,
               message: "已撤销上一步。",
             }

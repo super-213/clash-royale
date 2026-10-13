@@ -25,6 +25,8 @@
 
 ID 按区服与排序后的卡牌/形态计算；出处单独 upsert。基础链接生成只是语法层构造，游戏内验证属于另一个流程。
 
+自配卡组完整分享使用当前站点 `?view=brief#deck=<base64url>`，版本 1 载荷仅包含 `version`、`name`、8 个有序 `{id,variant}` 槽和必填 `tower_troop`。不携带本地 ID、时间或卡牌图片 URL。解析限制长度、版本、唯一卡牌 ID、形态枚举和塔兵枚举；保存前依接收端卡牌目录校验槽位兼容性。用户点击保存才生成新的本地 ID，保持原顺序与形态；无服务端分享记录。完整分享链接与 Supercell 基础游戏导入链接分开。
+
 ### 展示槽位与来源形态
 
 `shared/deck-layout.ts` 将组成编排为两行四列。按照 [Supercell 2026-03-16 槽位规则](https://supercell.com/en/games/clashroyale/blog/news/mid-march-update/)，前三槽为觉醒（Evolution）、精英（Hero/Champion）、魔法（Wild），其余为普通栏位。精英栏位接受 Hero 或 Champion，魔法栏位接受 Evolution、Hero 或 Champion。中文术语以官方「觉醒栏位、精英栏位、魔法栏位」为准；Hero 是精英形态，Champion 是英雄牌。自配编辑行为详见 [规则核对](deck-rules.md)。
@@ -51,3 +53,5 @@ ID 按区服与排序后的卡牌/形态计算；出处单独 upsert。基础链
 读接口无用户登录；收藏保存在浏览器，不提供跨设备同步。
 
 `/api/deck-builder` 提供配卡收藏册，字段包括基础 ID、中文名/英文名、图片、圣水、类型、稀有度、目录支持形态。`local:<UUID>` 自配卡组仅在浏览器保存，不能用于公共 `/api/decks?ids=…` 查询，也不通过入库接口发布。前端 `Deck` 的 `name` 和 `slot_order: explicit` 用于本地用户配置；它们不改变公共 deck ingest 合同或收藏身份算法。
+
+自配卡组与编辑草稿新增 `tower_troop`：tower-princess / cannoneer / dagger-duchess / royal-chef。缺失时默认公主塔，保持原 v1 浏览器存储兼容。塔兵独立保存，不加入 slots 或八张卡牌资料，不影响身份和平均圣水；公共采集合同与数据库无需迁移。

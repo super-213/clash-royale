@@ -288,6 +288,10 @@ main > footer button { display: inline-flex; align-items: center; gap: 4px; min-
 .brief-chevron { flex-shrink: 0; color: var(--accent); transition: transform .18s; }
 .brief-deck[open] .brief-chevron { transform: rotate(180deg); }
 .brief-deck-body { padding: 0 22px; animation: enter .2s both; }
+.deck-tower { display: flex; align-items: center; gap: 12px; margin: 16px 0 0; padding: 12px 0 0; border-top: 1px solid var(--line); }
+.deck-tower > .picture { width: 44px; flex: 0 0 44px; }
+.deck-tower small { display: block; color: var(--muted); font-size: 11px; }
+.deck-tower strong { display: block; margin-top: 3px; font-size: 13px; }
 .brief-deck-actions { flex-wrap: wrap; justify-content: flex-start; gap: 10px 20px; padding: 6px 0 18px; }
 .brief-deck-actions > button:last-child { margin-left: auto; }
 .brief-deck-actions button:last-child { color: var(--muted); }
@@ -355,6 +359,14 @@ main > footer button { display: inline-flex; align-items: center; gap: 4px; min-
 .editor-slot-grid .elixir { min-width: 18px; height: 21px; font-size: 10px; }
 .editor-empty-slot { display: grid; place-items: center; aspect-ratio: 196/239; color: #a2c2e5; }
 .editor-empty-slot svg { filter: drop-shadow(0 2px #071c33); }
+.editor-tower-picker { min-width: 0; margin: 22px 0 0; padding: 0; border: 0; }
+.editor-tower-picker legend { margin-bottom: 10px; color: #e0ecfa; font-size: 13px; font-weight: 600; }
+.editor-tower-options { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; }
+.editor-tower-options button { min-width: 0; min-height: 44px; padding: 7px 3px; border: 2px solid #7098c1; border-radius: 9px; background: #173b64; color: #e0ecfa; }
+.editor-tower-options button.selected { border-color: var(--gold); background: #304963; box-shadow: 0 0 0 2px #ffe39b35; }
+.editor-tower-options .picture { width: 40px; margin: 0 auto 6px; }
+.editor-tower-options .image-fallback { color: #e0ecfa; }
+.editor-tower-options button > span { display: block; font-size: 10px; white-space: nowrap; }
 .editor-board-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-top: 22px; color: #d5e6f8; font-size: 12px; }
 .editor-board-actions > span { flex-basis: 100%; margin-bottom: 3px; }
 .editor-board-actions b { color: #eac7ff; font-size: 19px; }

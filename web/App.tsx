@@ -17,6 +17,8 @@ import { Decks, DeckPanel } from "./components/Decks";
 import { Sources } from "./components/Sources";
 import { MyDecks } from "./components/MyDecks";
 import { DeckEditor } from "./components/DeckEditor";
+import { SharedDeckPreview } from "./components/SharedDeckPreview";
+import { readSharedDeck } from "../shared/deck-share";
 import {
   PERSONAL_KEY,
   MAX_PERSONAL_DECKS,
@@ -28,6 +30,20 @@ import {
 } from "../shared/personal-decks";
 import type { DisplayCard } from "../shared/deck-layout";
 function App() {
+  const readShare = () => {
+    try { return { deck: readSharedDeck(location.hash), error: "" }; }
+    catch (error) { return { deck: null, error: (error as Error).message }; }
+  };
+  const [shared, setShared] = useState(readShare);
+  const closeShare = () => {
+    history.replaceState(null, "", location.pathname + location.search);
+    setShared({ deck: null, error: "" });
+  };
+  useEffect(() => {
+    const update = () => setShared(readShare());
+    window.addEventListener("hashchange", update);
+    return () => window.removeEventListener("hashchange", update);
+  }, []);
   const [personalState, setPersonalState] = useState(() => {
     try {
       return {
@@ -112,7 +128,7 @@ function App() {
     const params = new URLSearchParams();
     params.set("view", view);
     if (q) params.set("q", q);
-    history.replaceState(null, "", "?" + params);
+    history.replaceState(null, "", "?" + params + location.hash);
   }, [view, q]);
   useEffect(() => {
     if (!toast) return;
@@ -153,6 +169,7 @@ function App() {
       : [...personalState.decks, deck];
     const stored = persistPersonal(decks);
     setEditor(null);
+    closeShare();
     navigate("brief");
     notify(
       stored
@@ -190,7 +207,7 @@ function App() {
       await navigator.clipboard.writeText(text);
       notify("链接已复制");
     } catch {
-      notify("复制失败，请使用「打开游戏」或手动复制地址");
+      notify("复制失败，请在卡组详情中手动复制链接");
     }
   };
   return (
@@ -259,6 +276,7 @@ function App() {
               saved={saved}
               dictionary={displayCards}
               save={save}
+              copy={copy}
               open={setSelectedDeck}
               browse={(onlySaved = false) => {
                 navigate("decks");
@@ -330,6 +348,16 @@ function App() {
           save={savePersonal}
         />
       )}
+      {(shared.deck || shared.error) && <SharedDeckPreview
+        deck={shared.deck}
+        error={shared.error}
+        cards={formCatalog.data?.cards}
+        loading={formCatalog.loading}
+        retry={formCatalog.retry}
+        full={personalState.decks.length >= MAX_PERSONAL_DECKS}
+        close={closeShare}
+        save={savePersonal}
+      />}
       {toast && (
         <div className="toast" role="status">
           <Check size={16} />

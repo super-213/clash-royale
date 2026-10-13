@@ -10,7 +10,9 @@ import {
   type DraftSlot,
   adaptDeck,
   deckCardDictionary,
+  draftSchema,
 } from "../shared/personal-decks";
+import { towerTroops, DEFAULT_TOWER_TROOP } from "../shared/tower-troops";
 import { builderCards } from "../worker/builder-feed";
 import { layoutDeck, cardForForm } from "../shared/deck-layout";
 
@@ -27,6 +29,33 @@ const draft: DraftSlot[] = [
 ];
 
 describe("personal deck building", () => {
+  it("defaults new decks, old saved decks and old drafts to Tower Princess", () => {
+    const deck = createPersonalDeck("旧卡组", draft, cards);
+    expect(deck.tower_troop).toBe(DEFAULT_TOWER_TROOP);
+    const { tower_troop, ...oldDeck } = deck;
+    const restored = parsePersonalDecks(JSON.stringify({ version: 1, decks: [oldDeck] }))[0];
+    expect(restored.tower_troop).toBe("tower-princess");
+    expect(restored.id).toBe(deck.id);
+    expect(restored.slots).toEqual(deck.slots);
+    expect(draftSchema.parse({ name: "旧草稿", slots: draft }).tower_troop).toBe("tower-princess");
+  });
+  it("round-trips each tower choice independently of eight cards and keeps it across edits", () => {
+    for (const troop of towerTroops) {
+      const deck = createPersonalDeck("塔兵卡组", draft, cards, undefined, troop.key);
+      const restored = parsePersonalDecks(serializePersonalDecks([deck]))[0];
+      const renamed = createPersonalDeck("改名", draft, cards, restored);
+      expect(renamed.tower_troop).toBe(troop.key);
+      expect(renamed.slots).toEqual(draft);
+      expect(renamed.cards).toHaveLength(8);
+      expect(renamed.id).toBe(deck.id);
+      expect(draftSchema.parse({ name: "草稿", slots: draft, tower_troop: troop.key }).tower_troop).toBe(troop.key);
+    }
+  });
+  it("rejects invalid tower selections without treating them as playable cards", () => {
+    const deck = createPersonalDeck("有效卡组", draft, cards);
+    expect(() => parsePersonalDecks(JSON.stringify({ version: 1, decks: [{ ...deck, tower_troop: "knight" }] }))).toThrow();
+    expect(() => draftSchema.parse({ name: "草稿", slots: draft, tower_troop: "knight" })).toThrow();
+  });
   it("adapts the reported classic X-Bow composition using compatible cards without rewriting the source", () => {
     const source = [
       27000008, 26000038, 26000030, 26000010, 27000006, 26000001, 28000011,

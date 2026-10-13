@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { Deck, Slot } from "./schema";
 import { slotKindAt, slotNames, type DeckCard } from "./deck-layout";
+import { DEFAULT_TOWER_TROOP, towerTroopSchema, type TowerTroopKey } from "./tower-troops";
 
 export const PERSONAL_KEY = "royale-personal-decks-v1";
 export const MAX_PERSONAL_DECKS = 10;
@@ -36,6 +37,7 @@ export type BuilderCard = z.infer<typeof builderCardSchema>;
 export type DraftSlot = { id: number; variant: CardForm } | null;
 export const draftSchema = z.object({
   name: z.string().max(50),
+  tower_troop: towerTroopSchema.default(DEFAULT_TOWER_TROOP),
   slots: z
     .array(
       z
@@ -282,6 +284,7 @@ const personalSchema = z
   .object({
     id: z.string().regex(/^local:[0-9a-f-]{36}$/),
     name: z.string().trim().min(1).max(50),
+    tower_troop: towerTroopSchema.default(DEFAULT_TOWER_TROOP),
     slots: z
       .array(
         z.object({
@@ -304,8 +307,10 @@ const personalSchema = z
   });
 export type PersonalDeck = Deck & {
   name: string;
+  slots: Exclude<DraftSlot, null>[];
   slot_order: "explicit";
   cards: BuilderCard[];
+  tower_troop: TowerTroopKey;
 };
 function asDeck(value: z.infer<typeof personalSchema>): PersonalDeck {
   return { ...value, region: "global", slot_order: "explicit", origins: [] };
@@ -332,11 +337,13 @@ export function createPersonalDeck(
   slots: DraftSlot[],
   cards: Record<number, BuilderCard>,
   previous?: PersonalDeck,
+  towerTroop: TowerTroopKey = previous?.tower_troop ?? DEFAULT_TOWER_TROOP,
 ): PersonalDeck {
   const now = new Date().toISOString();
   const value = personalSchema.parse({
     id: previous?.id ?? `local:${crypto.randomUUID()}`,
     name: name.trim(),
+    tower_troop: towerTroop,
     slots,
     cards: slots.map((slot) => slot && cards[slot.id]),
     created_at: previous?.created_at ?? now,

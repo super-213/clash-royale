@@ -21,7 +21,9 @@ import {
   type PersonalDeck,
   adaptDeck,
   wildSwitchForms,
+  isPersonalDeck,
 } from "../../shared/personal-decks";
+import { DEFAULT_TOWER_TROOP, towerTroops } from "../../shared/tower-troops";
 import { useApi } from "../api";
 import { Picture, Notice } from "./Common";
 import type { Deck } from "../../shared/schema";
@@ -61,12 +63,14 @@ export function DeckEditor({
           ? `${(source.name ?? source.origins[0]?.title ?? "卡组").slice(0, 44)} · 自配`
           : `主卡组 ${number}`),
       slots: deck ? (deck.slots as Exclude<DraftSlot, null>[]) : blank(),
+      tower_troop: deck?.tower_troop ??
+        (source && isPersonalDeck(source) ? source.tower_troop : DEFAULT_TOWER_TROOP),
       restored: false,
     };
   });
   const [name, setName] = useState(initial.name);
-  const [editor, setEditor] = useState(() => initialEditorState(initial.slots));
-  const { slots, target, candidateId, swapping, message } = editor;
+  const [editor, setEditor] = useState(() => initialEditorState(initial.slots, initial.tower_troop));
+  const { slots, towerTroop, target, candidateId, swapping, message } = editor;
   const [search, setSearch] = useState("");
   const [type, setType] = useState("");
   const [sorting, setSorting] = useState("elixir");
@@ -124,6 +128,9 @@ export function DeckEditor({
   useEffect(() => {
     if (!feed.data || seeded.current) return;
     seeded.current = true;
+    // Saved/shared configurations and restored drafts keep their exact forms.
+    // Only adapting a public source may rearrange or choose new forms.
+    if (!source || initial.restored) return;
     try {
       dispatch({
         type: "seed",
@@ -156,12 +163,12 @@ export function DeckEditor({
     if (saved.current || (source && !initial.restored && !seeded.current))
       return;
     try {
-      localStorage.setItem(draftKey, JSON.stringify({ name, slots }));
+      localStorage.setItem(draftKey, JSON.stringify({ name, slots, tower_troop: towerTroop }));
       setDraftStored(true);
     } catch {
       setDraftStored(false);
     }
-  }, [draftKey, name, slots, source, initial.restored]);
+  }, [draftKey, name, slots, towerTroop, source, initial.restored]);
 
   const chooseCandidate = (card: BuilderCard) => {
     if (suppressClick.current) return;
@@ -177,7 +184,7 @@ export function DeckEditor({
   };
   const submit = () => {
     try {
-      const next = createPersonalDeck(name, slots, cards, deck);
+      const next = createPersonalDeck(name, slots, cards, deck, towerTroop);
       saved.current = true;
       try {
         localStorage.removeItem(draftKey);
@@ -313,6 +320,21 @@ export function DeckEditor({
               );
             })}
           </div>
+          <fieldset className="editor-tower-picker">
+            <legend>塔兵</legend>
+            <div className="editor-tower-options">
+              {towerTroops.map((troop) => (
+                <button key={troop.key} type="button"
+                  aria-label={`选择塔兵 ${troop.name}`}
+                  aria-pressed={towerTroop === troop.key}
+                  className={towerTroop === troop.key ? "selected" : ""}
+                  onClick={() => dispatch({ type: "tower", value: troop.key })}>
+                  <Picture card={troop} />
+                  <span>{troop.name}</span>
+                </button>
+              ))}
+            </div>
+          </fieldset>
           {wildCard && wildSlot && wildForms.length > 1 && (
             <div className="editor-wild-form">
               <small>魔法栏位形态 · {wildCard.name}</small>

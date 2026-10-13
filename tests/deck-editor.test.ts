@@ -31,6 +31,20 @@ const act = (state: EditorState, action: EditorAction) =>
   reduceDeckEditor(state, action, cards);
 
 describe("direct deck editing", () => {
+  it("selects a tower without moving cards and undoes only the last tower or card change", () => {
+    const before = full();
+    const tower = act(before, { type: "tower", value: "cannoneer" });
+    expect(tower.towerTroop).toBe("cannoneer");
+    expect(tower.slots).toBe(before.slots);
+    expect(tower.target).toBe(before.target);
+    expect(act(tower, { type: "undo" }).towerTroop).toBe("tower-princess");
+    const changed = act(tower, { type: "drop", id: 26000014, position: 2 });
+    const undone = act(changed, { type: "undo" });
+    expect(undone.towerTroop).toBe("cannoneer");
+    expect(undone.slots).toEqual(before.slots);
+    expect(act(tower, { type: "tower", value: "cannoneer" }).undo).toBe(tower.undo);
+    expect(act(tower, { type: "seed", slots: before.slots }).towerTroop).toBe("cannoneer");
+  });
   it("fills empty slots with one click and advances, including a compatible empty slot for Champions", () => {
     let state = act(empty(), { type: "choose", id: 26000030 });
     expect(state.slots[0]).toEqual({ id: 26000030, variant: "evolution" });

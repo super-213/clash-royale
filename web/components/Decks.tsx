@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Card, Deck } from "../../shared/schema";
 import { copyDeckUrl } from "../../shared/versioning";
+import { fullDeckUrl } from "../../shared/deck-share";
 import {
   layoutDeck,
   type DeckCard,
@@ -11,6 +12,8 @@ import { useDebouncedValue } from "../debounce";
 import { date } from "../format";
 import { Notice, Empty, Pager } from "./Common";
 import { DeckSlots } from "./DeckSlots";
+import { TowerTroop } from "./TowerTroop";
+import { isPersonalDeck } from "../../shared/personal-decks";
 import {
   Search,
   X,
@@ -262,6 +265,8 @@ export function DeckPanel({
   dictionary: Record<number, DeckCard>;
   copy: (text: string) => void;
 }) {
+  const personal = isPersonalDeck(deck) ? deck : null;
+  const shareUrl = personal ? fullDeckUrl(personal, location.href) : null;
   const url = copyDeckUrl(
     layoutDeck(deck.slots, dictionary, {
       preserveOrder: deck.slot_order === "explicit",
@@ -276,10 +281,11 @@ export function DeckPanel({
         context="detail"
         preserveOrder={deck.slot_order === "explicit"}
       />
+      {isPersonalDeck(deck) && <TowerTroop value={deck.tower_troop} />}
       <div className="detail-actions">
-        <button className="primary" onClick={() => copy(url)}>
+        <button className="primary" onClick={() => copy(shareUrl ?? url)}>
           <Copy size={16} />
-          复制基础卡组链接
+          {shareUrl ? "复制完整配置链接" : "复制基础卡组链接"}
         </button>
         <a
           className="button primary"
@@ -290,7 +296,9 @@ export function DeckPanel({
           打开游戏 <ExternalLink size={16} />
         </a>
       </div>
-      <p className="scope-note">基础链接按展示顺序生成，不含特殊形态。形态与解锁状态请在游戏内确认；导入尚未经过游戏内验证。</p>
+      <p className="scope-note">{shareUrl
+        ? "完整配置链接可在皇室档案还原卡牌顺序、觉醒、精英形态和塔兵。打开游戏使用基础链接，特殊形态和塔兵需在游戏内配置。"
+        : "基础链接按展示顺序生成，不含特殊形态或塔兵。形态、塔兵与解锁状态请在游戏内确认；导入尚未经过游戏内验证。"}</p>
       {deck.slot_order === "explicit" ? (
         <p className="scope-note">
           自配卡组 · 保存在当前浏览器
@@ -310,8 +318,8 @@ export function DeckPanel({
         ))}
       </div>
       <label className="link-field">
-        游戏链接
-        <input readOnly value={url} onFocus={(e) => e.target.select()} />
+        {shareUrl ? "完整配置链接" : "游戏链接"}
+        <input readOnly value={shareUrl ?? url} onFocus={(e) => e.target.select()} />
       </label>
     </>
   );
